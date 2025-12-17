@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bonding Optimizer Mobile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-app: #0f172a;
+            --bg-panel: #1e293b;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6; 
+            --accent-glow: rgba(59, 130, 246, 0.4);
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: rgba(148, 163, 184, 0.15);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Inter', sans-serif; margin: 0; 
+            background-color: var(--bg-app); color: var(--text-main);
+            height: 100vh; display: flex; overflow: hidden;
+        }
+
+        /* --- Layout --- */
+        /* Desktop Default */
+        #app-container {
+            display: flex; width: 100%; height: 100%;
+        }
+        #sidebar {
+            width: 360px; background-color: var(--bg-app);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 20px;
+            z-index: 20; box-shadow: 5px 0 20px rgba(0,0,0,0.3);
+            overflow-y: auto;
+        }
+        #canvas-wrapper {
+            flex-grow: 1; position: relative; background-color: #020617;
+            background-image: radial-gradient(#334155 1.5px, transparent 1.5px);
+            background-size: 20px 20px;
+            display: flex; justify-content: center; align-items: center; overflow: hidden;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            #app-container { flex-direction: column; }
+            #sidebar {
+                width: 100%; height: 45%; order: 2; border-right: none; border-top: 1px solid var(--border);
+                padding: 16px; box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
+            }
+            #canvas-wrapper { height: 55%; order: 1; }
+            .brand { font-size: 1.1rem; margin-bottom: 12px; }
+            .btn { padding: 12px; font-size: 0.85rem; }
+        }
+
+        /* --- Components --- */
+        .brand {
+            font-size: 1.3rem; font-weight: 800; margin-bottom: 20px;
+            background: linear-gradient(90deg, #fff, #94a3b8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .btn {
+            width: 100%; padding: 14px; border: none; border-radius: 12px;
+            font-size: 0.95rem; font-weight: 700; cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            margin-bottom: 12px; position: relative; overflow: hidden;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #2563eb); color: white;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text-muted);
+        }
+
+        .section-header {
+            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--text-muted); margin: 20px 0 10px 0; font-weight: 700;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+        /* Toggles & Controls */
+        .control-panel {
+            background: var(--bg-panel); padding: 12px; border-radius: 10px;
+            border: 1px solid var(--border); margin-bottom: 10px;
+        }
+        .toggle-row { display: flex; align-items: center; justify-content: space-between; }
+        .toggle-switch { position: relative; width: 44px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider-tog {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #475569; transition: .3s; border-radius: 34px;
+        }
+        .slider-tog:before {
+            position: absolute; content: ""; height: 18px; width: 18px;
+            left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%;
+        }
+        input:checked + .slider-tog { background-color: var(--accent); }
+        input:checked + .slider-tog:before { transform: translateX(20px); }
+        .control-label { font-size: 0.9rem; font-weight: 600; color: #fff; }
+        
+        /* Range Slider for Size */
+        .range-wrap { margin-top: 12px; display: none; animation: fadeIn 0.3s; }
+        .range-wrap.show { display: block; }
+        input[type=range] {
+            width: 100%; -webkit-appearance: none; background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%;
+            background: #fff; cursor: pointer; margin-top: -7px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; cursor: pointer; background: #475569; border-radius: 2px;
+        }
+
+        /* Stats & List */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .stat-item { background: var(--bg-panel); padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
+        .stat-label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; }
+        .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 700; margin-top: 2px; }
+        .stat-val.bad { color: var(--danger); } .stat-val.good { color: var(--success); }
+
+        #connection-list { display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; }
+        .dev-card {
+            background: var(--bg-panel); border-radius: 8px; border: 1px solid var(--border); overflow: hidden;
+        }
+        .dev-card.error { border-color: var(--danger); }
+        .dev-title {
+            background: rgba(0,0,0,0.2); padding: 8px 12px; font-size: 0.8rem; font-weight: 700;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .wire-row {
+            padding: 8px 12px; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text-muted);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .pin-badge {
+            display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px;
+            background: #334155; border-radius: 4px; font-size: 0.7rem; margin-right: 6px; color: #fff;
+        }
+        .role-S, .role-D { color: var(--accent); font-weight: bold; } .role-G { color: #eab308; font-weight: bold; }
+
+        /* Overlays */
+        #edit-mode-overlay {
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5);
+            color: #fbbf24; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;
+            pointer-events: none; display: none; backdrop-filter: blur(4px); z-index: 10;
+        }
+
+        #toast-container {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; gap: 8px; pointer-events: none; width: 90%; max-width: 320px; z-index: 10;
+        }
+        .toast {
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px);
+            color: #fff; padding: 10px 16px; border-radius: 50px; font-size: 0.85rem; font-weight: 600;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); opacity: 0; transform: translateY(20px);
+            transition: all 0.3s; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.error { border-color: var(--danger); color: #fca5a5; }
+
+        @keyframes fadeIn { from { opacity: 0; height: 0; } to { opacity: 1; height: 30px; } }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <div id="sidebar">
+        <div class="brand">Bonding Optimizer</div>
+        
+        <div class="control-panel">
+            <div class="toggle-row">
+                <span class="control-label">Edit Layout Mode</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="chk-move-pads">
+                    <span class="slider-tog"></span>
+                </label>
+            </div>
+            <div class="range-wrap" id="size-control">
+                <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#94a3b8; margin-bottom:4px;">
+                    <span>Pad Size</span><span>Drag to resize</span>
+                </div>
+                <input type="range" id="rng-size" min="0.1" max="1.0" step="0.05" value="0.35">
+            </div>
+        </div>
+
+        <button id="btn-calc" class="btn btn-primary">Optimize Layout (SA)</button>
+        <button id="btn-reset" class="btn btn-secondary">Reset Layout</button>
+
+        <div class="section-header">Stats</div>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-label">Crossings</div>
+                <div class="stat-val" id="val-cross">-</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Critical</div>
+                <div class="stat-val" id="val-crit">-</div>
+            </div>
+            <div class="stat-item" style="grid-column: span 2;">
+                <div class="stat-label">Total Wire Length</div>
+                <div class="stat-val" id="val-len">-</div>
+            </div>
+        </div>
+
+        <div class="section-header">Connections</div>
+        <div id="connection-list">
+            <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+                Ready.
+            </div>
+        </div>
+    </div>
+
+    <div id="canvas-wrapper">
+        <canvas id="mainCanvas"></canvas>
+        <div id="edit-mode-overlay">EDIT MODE</div>
+        <div id="toast-container">
+            <div id="toast-cross" class="toast error"><span>⚠️</span> Crossing Detected</div>
+            <div id="toast-rf" class="toast error"><span>⚠️</span> No RF Connection</div>
+            <div id="toast-save" class="toast"><span>💾</span> Saved</div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* =========================================
+   CONFIG
+   ========================================= */
+const GRID_SIZE = 12;
+const PAD_CONFIG = {
+    'TOP':    [6, 10, 24, 7, 5, 16],
+    'RIGHT':  [1, 14, 18, 19, 20, 21],
+    'BOTTOM': [12, 2, 3, 4, 8, 22],
+    'LEFT':   [11, 9, 23, 13, 15, 17]
+};
+const COLORS = {
+    BG: '#020617', GRID: '#334155', BORDER: '#475569',
+    PAD_G: '#22c55e', PAD_X: '#ef4444', PAD_RF: '#3b82f6',
+    PIN_G: '#eab308', PIN_RF: '#3b82f6', PIN_OFF: '#cbd5e1',
+    WIRE_G: '#f59e0b', WIRE_RF: '#3b82f6',
+    DEV: '#1e293b', DEV_B: '#64748b', DEV_SEL: '#8b5cf6',
+    EDIT: '#f59e0b'
+};
+
+/* =========================================
+   CORE LOGIC (Optimized for Mobile)
+   ========================================= */
+const dist = (x1, y1, x2, y2) => Math.sqrt((x1-x2)**2 + (y1-y2)**2);
+
+const checkIntersection = (p1, p2, p3, p4) => {
+    const d = (p2.x - p1.x) * (p4.y - p3.y) - (p2.y - p1.y) * (p4.x - p3.x);
+    if (Math.abs(d) < 1e-9) return false;
+    const u = ((p3.x - p1.x) * (p4.y - p3.y) - (p3.y - p1.y) * (p4.x - p3.x)) / d;
+    const v = ((p3.x - p1.x) * (p2.y - p1.y) - (p3.y - p1.y) * (p2.x - p1.x)) / d;
+    return (u > 0.001 && u < 0.999) && (v > 0.001 && v < 0.999);
+};
+
+const getPadConnectionPoint = (pin, pad, angleOffset) => {
+    const baseAngle = Math.atan2(pin.y - pad.y, pin.x - pad.x);
+    const finalAngle = baseAngle + angleOffset;
+    if (pad.shape === 'square') {
+        const cos = Math.cos(finalAngle), sin = Math.sin(finalAngle);
+        const absCos = Math.abs(cos), absSin = Math.abs(sin);
+        let ix, iy;
+        if (absCos > absSin) {
+            ix = Math.sign(cos) * pad.r; iy = ix * (sin / cos);
+        } else {
+            iy = Math.sign(sin) * pad.r; ix = iy * (cos / sin);
+        }
+        return { x: pad.x + ix, y: pad.y + iy };
+    }
+    return { x: pad.x + Math.cos(finalAngle)*pad.r, y: pad.y + Math.sin(finalAngle)*pad.r };
+};
+
+class Optimizer {
+    constructor(devices, pads, padStatus) {
+        this.pins = []; this.pads = []; this.devGroups = {};
+        devices.forEach((d, di) => {
+            this.devGroups[di] = [];
+            d.getAbsPins().forEach(p => {
+                if (p.active) {
+                    const idx = this.pins.length;
+                    this.pins.push({idx, x:p.x, y:p.y, role:p.role, devIdx:di, orig:p.index});
+                    this.devGroups[di].push(idx);
+                }
+            });
+        });
+        pads.forEach((p, i) => {
+            if (padStatus[i] !== 1) this.pads.push({...p, idx:this.pads.length, origIdx:i, st:padStatus[i]});
+        });
+        this.allowed = this.pins.map(pn => this.pads.filter(pd => pn.role==='G'?pd.st===0:true).map(p=>p.idx));
+    }
+
+    solve() {
+        const N = this.pins.length;
+        if (N===0) return {lines:[], stats:{cross:0, crit:0, len:0}};
+        
+        let assign = new Array(N).fill(-1), angles = new Array(N).fill(0), used = new Set();
+        
+        // Greedy Init
+        const ord = this.pins.map(p=>p.idx).sort((a,b)=>(this.pins[a].role!=='G'? -1:1));
+        ord.forEach(i => {
+            let best=-1, min=Infinity; const pn=this.pins[i];
+            this.allowed[i].forEach(pid => {
+                if (used.has(pid)) return;
+                let d = dist(pn.x, pn.y, this.pads[pid].x, this.pads[pid].y);
+                if (['S','D'].includes(pn.role) && this.pads[pid].st===2) d-=1000;
+                if (d<min) { min=d; best=pid; }
+            });
+            if (best!==-1) { assign[i]=best; used.add(best); }
+        });
+
+        // SA
+        let curC = this.cost(assign, angles), bestAss=[...assign], bestAng=[...angles], bestV=curC.val;
+        let t=80, cool=0.92;
+        while(t>0.05) {
+            for(let k=0; k<Math.min(150, N*10); k++) {
+                let nAss=[...assign], nAng=[...angles];
+                if(Math.random()<0.2) { // Swap
+                    const i = Math.floor(Math.random()*N), j = Math.floor(Math.random()*N);
+                    if(nAss[i]!==-1 && nAss[j]!==-1 && this.allowed[i].includes(nAss[j]) && this.allowed[j].includes(nAss[i])) {
+                        [nAss[i], nAss[j]] = [nAss[j], nAss[i]]; nAng[i]=0; nAng[j]=0;
+                    }
+                } else if(Math.random()<0.3) { // Move
+                    const i = Math.floor(Math.random()*N);
+                    if(nAss[i]!==-1) {
+                        const u = this.allowed[i].filter(pid => !new Set(nAss).has(pid));
+                        if(u.length>0) { nAss[i]=u[Math.floor(Math.random()*u.length)]; nAng[i]=0; }
+                    }
+                } else { // Angle
+                    const i = Math.floor(Math.random()*N);
+                    if(nAss[i]!==-1) {
+                        nAng[i] += (Math.random()-0.5)*0.6;
+                        nAng[i] = Math.max(-1, Math.min(1, nAng[i]));
+                    }
+                }
+                const nC = this.cost(nAss, nAng);
+                if(nC.val < curC.val || Math.random() < Math.exp(-(nC.val-curC.val)/t)) {
+                    assign=nAss; angles=nAng; curC=nC;
+                    if(nC.val < bestV) { bestAss=[...nAss]; bestAng=[...nAng]; bestV=nC.val; }
+                }
+            }
+            t*=cool;
+        }
+
+        const resLines = [];
+        bestAss.forEach((pid, i) => {
+            if(pid===-1) return;
+            const pn=this.pins[i], pd=this.pads[pid], pt=getPadConnectionPoint(pn, pd, bestAng[i]);
+            const isRF = ['S','D'].includes(pn.role) && pd.st===2;
+            resLines.push({
+                s:{x:pn.x, y:pn.y}, e:{x:pt.x, y:pt.y}, type:isRF?'RF':'Gate',
+                devIdx:pn.devIdx, pinIdx:pn.orig, role:pn.role, lbl:pd.lbl
+            });
+        });
+        return { lines:resLines, stats:this.cost(bestAss, bestAng) };
+    }
+
+    cost(assign, angles) {
+        let len=0, pref=0, devRF={}, segs=[];
+        assign.forEach((pid, i) => {
+            if(pid===-1) return;
+            const pn=this.pins[i], pd=this.pads[pid], pt=getPadConnectionPoint(pn, pd, angles[i]);
+            len += dist(pn.x, pn.y, pt.x, pt.y);
+            segs.push({x1:pn.x, y1:pn.y, x2:pt.x, y2:pt.y});
+            if(['S','D'].includes(pn.role)) {
+                if(pd.st===2) devRF[pn.devIdx]=true; else pref++;
+            }
+        });
+        let crit=0;
+        Object.keys(this.devGroups).forEach(di => {
+            if(this.devGroups[di].some(i=>['S','D'].includes(this.pins[i].role)) && !devRF[di]) crit++;
+        });
+        let cross=0;
+        for(let i=0; i<segs.length; i++) for(let j=i+1; j<segs.length; j++) {
+            if(checkIntersection(segs[i], segs[i], segs[j], segs[j])) cross++; // struct compatible
+        }
+        return { val: crit*1e7 + cross*1e5 + pref*1e3 + len, crit, cross, len };
+    }
+}
+
+/* =========================================
+   APP CLASS
+   ========================================= */
+class Device {
+    constructor(name, w, h, x, y) {
+        this.name=name; this.w=w; this.h=h; this.pos={x,y}; this.pins=[];
+        const xr=Array.from({length:w}, (_,i)=>-(w-1)/2+i), yr=Array.from({length:h}, (_,i)=>-(h-1)/2+i);
+        xr.forEach(px=>yr.forEach(py=>this.pins.push({rel:{x:px,y:py}, active:true, role:'G'})));
+        this.pins.sort((a,b)=>a.rel.y-b.rel.y);
+        this.pins[0].role='S'; this.pins[this.pins.length-1].role='D';
+    }
+    getAbsPins() { return this.pins.map((p,i)=>({x:this.pos.x+p.rel.x, y:this.pos.y+p.rel.y, active:p.active, role:p.role, index:i})); }
+    toggle(i) { this.pins[i].active = !this.pins[i].active; }
+    cycle(i) {
+        const p = this.pins[i]; const r = p.role==='G'?'S':(p.role==='S'?'D':'G');
+        if(['S','D'].includes(r)) { const old=this.pins.findIndex(x=>x.role===r); if(old!==-1) this.pins[old].role='G'; }
+        p.role = r;
+    }
+    snap() {
+        const s = (v,z) => z%2===0 ? Math.round(v-0.5)+0.5 : Math.round(v);
+        this.pos.x = Math.max(0, Math.min(11, s(this.pos.x, this.w)));
+        this.pos.y = Math.max(0, Math.min(11, s(this.pos.y, this.h)));
+    }
+    toJSON() { return {name:this.name, w:this.w, h:this.h, pos:this.pos, pins:this.pins}; }
+    static fromJSON(d) { const n=new Device(d.name, d.w, d.h, d.pos.x, d.pos.y); n.pins=d.pins; return n; }
+}
+
+class App {
+    constructor() {
+        this.canvas = document.getElementById('mainCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.scale = 50; 
+        this.loadState();
+        this.lines = [];
+        
+        // Interaction State
+        this.editMode = false;
+        this.drag = { active:false, type:null, idx:-1, off:{x:0,y:0} };
+        this.longPressTimer = null;
+        
+        this.setupListeners();
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+    }
+
+    loadState() {
+        const s = localStorage.getItem('bond_opt_mobile');
+        if (s) {
+            const d = JSON.parse(s);
+            this.devices = d.devices.map(x=>Device.fromJSON(x));
+            this.pads = d.pads; this.padSt = d.padSt;
+        } else {
+            this.initDefault();
+        }
+    }
+    saveState() {
+        localStorage.setItem('bond_opt_mobile', JSON.stringify({
+            devices: this.devices.map(d=>d.toJSON()), pads: this.pads, padSt: this.padSt
+        }));
+        this.toast('toast-save', 1500);
+    }
+    initDefault() {
+        this.devices = [ new Device('SQD', 2, 4, 3.5, 3.5), new Device('DQD', 2, 5, 7.5, 7.0) ];
+        this.padSt = new Array(24).fill(0); this.pads = [];
+        const pts=(s,e,n)=>Array.from({length:n},(_,i)=>s+(e-s)/(n-1)*i);
+        const p=pts(0,11,6), rp=[...p].reverse(), add=(a,c,ax,v)=>a.forEach((val,i)=>this.pads.push({x:ax==='x'?val:v, y:ax==='y'?val:v, lbl:c[i], r:0.35, shape:'circle'}));
+        add(p,PAD_CONFIG.TOP,'x',14); add(rp,PAD_CONFIG.RIGHT,'y',14);
+        add(rp,PAD_CONFIG.BOTTOM,'x',-3); add(p,PAD_CONFIG.LEFT,'y',-3);
+    }
+
+    // Coord Transform
+    toScr(lx, ly) {
+        const cx=this.canvas.width/2, cy=this.canvas.height/2, gc=5.5;
+        return {x: cx+(lx-gc)*this.scale, y: cy-(ly-gc)*this.scale};
+    }
+    toLog(sx, sy) {
+        const cx=this.canvas.width/2, cy=this.canvas.height/2, gc=5.5;
+        return {x: (sx-cx)/this.scale+gc, y: gc-(sy-cy)/this.scale};
+    }
+
+    draw() {
+        const ctx = this.ctx;
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // 1. Grid
+        const b1=this.toScr(-0.5,-0.5), b2=this.toScr(11.5,11.5);
+        ctx.strokeStyle=COLORS.BORDER; ctx.lineWidth=2;
+        ctx.strokeRect(Math.min(b1.x,b2.x), Math.min(b1.y,b2.y), Math.abs(b2.x-b1.x), Math.abs(b2.y-b1.y));
+        ctx.fillStyle = COLORS.GRID;
+        for(let x=0;x<12;x++) for(let y=0;y<12;y++) {
+            const p=this.toScr(x,y); ctx.beginPath(); ctx.arc(p.x,p.y,2,0,Math.PI*2); ctx.fill();
+        }
+
+        // 2. Pads
+        this.pads.forEach((pd, i) => {
+            const p=this.toScr(pd.x, pd.y), r=pd.r*this.scale, st=this.padSt[i];
+            ctx.shadowBlur = st===2 ? 15 : 0; ctx.shadowColor = COLORS.PAD_RF;
+            ctx.fillStyle = st===0?COLORS.PAD_G : (st===1?COLORS.PAD_X:COLORS.PAD_RF);
+            ctx.beginPath();
+            if (pd.shape==='square') ctx.rect(p.x-r, p.y-r, r*2, r*2); else ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+            ctx.fill(); ctx.shadowBlur=0;
+            
+            if (this.editMode) {
+                ctx.strokeStyle = COLORS.EDIT; ctx.setLineDash([4,2]); ctx.lineWidth=2; ctx.stroke(); ctx.setLineDash([]);
+            } else {
+                ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth=1; ctx.stroke();
+            }
+            ctx.fillStyle='#fff'; ctx.font='bold 12px Inter'; ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.fillText(pd.lbl, p.x, p.y);
+        });
+
+        // 3. Devices
+        this.devices.forEach((d, di) => {
+            const c=this.toScr(d.pos.x, d.pos.y), w=d.w*this.scale, h=d.h*this.scale, sel=di===this.selDev;
+            ctx.save(); ctx.translate(c.x, c.y);
+            ctx.fillStyle=COLORS.DEV; ctx.strokeStyle=sel?COLORS.DEV_SEL:COLORS.DEV_B; ctx.lineWidth=sel?3:2;
+            ctx.beginPath(); ctx.roundRect(-w/2,-h/2,w,h,10); ctx.fill(); ctx.stroke();
+            ctx.fillStyle=ctx.strokeStyle; ctx.font='bold 14px Inter'; ctx.fillText(d.name, 0, -h/2-15); ctx.restore();
+
+            const res = this.lines.length>0;
+            d.getAbsPins().forEach((pn, pi) => {
+                const p=this.toScr(pn.x, pn.y), isRF=['S','D'].includes(pn.role);
+                ctx.beginPath();
+                if(!pn.active) {
+                    ctx.strokeStyle=COLORS.PIN_OFF; ctx.lineWidth=3;
+                    ctx.moveTo(p.x-4,p.y-4); ctx.lineTo(p.x+4,p.y+4); ctx.moveTo(p.x+4,p.y-4); ctx.lineTo(p.x-4,p.y+4); ctx.stroke();
+                } else {
+                    const r=res?10:7; ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+                    ctx.fillStyle=isRF?COLORS.PIN_RF:COLORS.PIN_G; ctx.fill();
+                    ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+                    if(res || isRF) {
+                        ctx.fillStyle='#fff'; ctx.font=res?'10px Mono':'9px Inter';
+                        ctx.fillText(res?pi:pn.role, p.x, p.y+(res?1.5:1));
+                    }
+                }
+            });
+        });
+
+        // 4. Wires
+        this.lines.forEach(l => {
+            const p1=this.toScr(l.s.x, l.s.y), p2=this.toScr(l.e.x, l.e.y);
+            ctx.strokeStyle = l.type==='RF'?COLORS.WIRE_RF:COLORS.WIRE_G;
+            ctx.lineWidth = l.type==='RF'?3:2; ctx.lineCap='round';
+            ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
+            ctx.beginPath(); ctx.arc(p2.x, p2.y, 3, 0, Math.PI*2); ctx.fillStyle='#000'; ctx.fill();
+        });
+    }
+
+    resize() {
+        const w=document.getElementById('canvas-wrapper');
+        this.canvas.width = w.clientWidth; this.canvas.height = w.clientHeight;
+        const min = Math.min(this.canvas.width, this.canvas.height);
+        this.scale = min / (GRID_SIZE + 6); // Add margin
+        this.draw();
+    }
+
+    // --- Interaction ---
+    vibrate() { if(navigator.vibrate) navigator.vibrate(10); }
+
+    setupListeners() {
+        const getPos = (e) => {
+            const r = this.canvas.getBoundingClientRect();
+            const cx = e.touches ? e.touches[0].clientX : e.clientX;
+            const cy = e.touches ? e.touches[0].clientY : e.clientY;
+            return this.toLog(cx-r.left, cy-r.top);
+        };
+
+        const start = (e) => {
+            e.preventDefault(); // Stop scroll
+            const m = getPos(e);
+            let hit = false;
+
+            // Long Press Logic
+            this.longPressTimer = setTimeout(() => this.handleLongPress(m), 500);
+
+            // 1. Edit Mode Pads
+            if (this.editMode) {
+                let pid = -1;
+                this.pads.forEach((p,i) => { if(dist(m.x,m.y,p.x,p.y) < p.r+0.5) pid=i; });
+                if (pid !== -1) {
+                    this.drag = {active:true, type:'PAD', idx:pid, off:{x:this.pads[pid].x-m.x, y:this.pads[pid].y-m.y}};
+                    this.vibrate(); return;
+                }
+            }
+            // 2. Pins
+            this.devices.forEach((d, di) => {
+                d.getAbsPins().forEach((p, pi) => {
+                    if(dist(m.x, m.y, p.x, p.y) < 0.5) {
+                        d.toggle(pi); this.reset(); this.draw(); this.saveState(); this.vibrate(); 
+                        clearTimeout(this.longPressTimer); // Toggle acts immediately
+                        hit=true;
+                    }
+                });
+            });
+            if(hit) return;
+
+            // 3. Pads Toggle
+            if (!this.editMode) {
+                this.pads.forEach((p, i) => {
+                    if(dist(m.x, m.y, p.x, p.y) < p.r+0.2) {
+                        this.padSt[i]=(this.padSt[i]+1)%3; this.reset(); this.draw(); this.saveState(); this.vibrate();
+                        hit=true;
+                    }
+                });
+                if(hit) return;
+            }
+
+            // 4. Device Drag
+            if (!this.editMode) {
+                this.devices.forEach((d, i) => {
+                    if(Math.abs(m.x-d.pos.x)<d.w/2 && Math.abs(m.y-d.pos.y)<d.h/2) {
+                        this.selDev=i; this.drag={active:true, type:'DEV', idx:i, off:{x:d.pos.x-m.x, y:d.pos.y-m.y}};
+                        this.reset(); this.draw();
+                    }
+                });
+            }
+        };
+
+        const move = (e) => {
+            if (this.drag.active) {
+                e.preventDefault();
+                clearTimeout(this.longPressTimer); // Cancel longpress on drag
+                const m = getPos(e);
+                if (this.drag.type === 'DEV') {
+                    const d = this.devices[this.drag.idx];
+                    d.pos.x = m.x + this.drag.off.x; d.pos.y = m.y + this.drag.off.y;
+                } else if (this.drag.type === 'PAD') {
+                    const p = this.pads[this.drag.idx];
+                    p.x = m.x + this.drag.off.x; p.y = m.y + this.drag.off.y;
+                }
+                this.draw();
+            }
+        };
+
+        const end = () => {
+            clearTimeout(this.longPressTimer);
+            if (this.drag.active) {
+                if(this.drag.type==='DEV') this.devices[this.drag.idx].snap();
+                this.drag.active = false; this.draw(); this.saveState();
+            }
+        };
+
+        this.canvas.addEventListener('mousedown', start);
+        this.canvas.addEventListener('touchstart', start, {passive:false});
+        window.addEventListener('mousemove', move);
+        window.addEventListener('touchmove', move, {passive:false});
+        window.addEventListener('mouseup', end);
+        window.addEventListener('touchend', end);
+
+        // UI Controls
+        const chk = document.getElementById('chk-move-pads');
+        const rng = document.getElementById('rng-size');
+        const rngWrap = document.getElementById('size-control');
+        const overlay = document.getElementById('edit-mode-overlay');
+
+        chk.addEventListener('change', (e) => {
+            this.editMode = e.target.checked;
+            rngWrap.classList.toggle('show', this.editMode);
+            overlay.style.display = this.editMode ? 'block' : 'none';
+            this.draw();
+        });
+
+        rng.addEventListener('input', (e) => {
+            if(this.editMode && this.drag.type==='PAD') { // Resize specific if dragging? No, global for simplicity on mobile
+               // Or better: resize ALL pads or recently clicked? Let's do ALL for consistent UI
+               const v = parseFloat(e.target.value);
+               this.pads.forEach(p => p.r = v);
+               this.draw(); this.saveState();
+            } else if (this.editMode) {
+               // Just update all to match slider
+               const v = parseFloat(e.target.value);
+               this.pads.forEach(p => p.r = v);
+               this.draw(); this.saveState();
+            }
+        });
+
+        document.getElementById('btn-reset').addEventListener('click', () => {
+             if(confirm('Reset all positions?')) { this.initDefault(); this.reset(); this.draw(); this.saveState(); }
+        });
+
+        document.getElementById('btn-calc').addEventListener('click', () => {
+            const b = document.getElementById('btn-calc'); const t = b.innerText;
+            b.innerText = 'Running...';
+            setTimeout(() => {
+                const opt = new Optimizer(this.devices, this.pads, this.padSt);
+                const res = opt.solve();
+                this.lines = res.lines;
+                this.updateStats(res.stats);
+                this.draw();
+                b.innerText = t;
+            }, 50);
+        });
+    }
+
+    handleLongPress(m) {
+        // 1. Device Pin Role Cycle
+        let hit = false;
+        this.devices.forEach(d => {
+            d.getAbsPins().forEach((p, pi) => {
+                if(dist(m.x, m.y, p.x, p.y) < 0.6) {
+                    d.cycle(pi); this.reset(); this.saveState(); this.vibrate(); hit=true;
+                    // Revert the toggle that happened on mousedown start
+                    d.toggle(pi); 
+                }
+            });
+        });
+        if(hit) { this.draw(); return; }
+
+        // 2. Pad Shape Toggle (Edit Mode)
+        if(this.editMode) {
+            this.pads.forEach(p => {
+                if(dist(m.x, m.y, p.x, p.y) < p.r+0.2) {
+                    p.shape = p.shape==='circle' ? 'square' : 'circle';
+                    this.draw(); this.saveState(); this.vibrate();
+                }
+            });
+        }
+    }
+
+    reset() { this.lines=[]; this.updateStats({cross:0,crit:0,len:0}); ['toast-cross','toast-rf'].forEach(i=>document.getElementById(i).classList.remove('show')); }
+    toast(id, ms) { document.getElementById(id).classList.add('show'); setTimeout(()=>document.getElementById(id).classList.remove('show'), ms); }
+    
+    updateStats(s) {
+        const el = (i,v,b) => { const e=document.getElementById(i); e.innerText=v; e.className='stat-val '+(b?'bad':'good'); };
+        el('val-cross', s.cross, s.cross>0); el('val-crit', s.crit, s.crit>0); document.getElementById('val-len').innerText=s.len.toFixed(1);
+        document.getElementById('toast-cross').classList.toggle('show', s.cross>0);
+        document.getElementById('toast-rf').classList.toggle('show', s.crit>0);
+        
+        const lst = document.getElementById('connection-list'); lst.innerHTML='';
+        this.devices.forEach((d, di) => {
+            const lns = this.lines.filter(l=>l.devIdx===di); if(lns.length===0) return;
+            lns.sort((a,b)=>a.pinIdx-b.pinIdx);
+            const card = document.createElement('div');
+            const err = lns.some(l=>['S','D'].includes(l.role)) && !lns.some(l=>l.type==='RF');
+            card.className='dev-card'+(err?' error':'');
+            let h = `<div class="dev-title"><span>${d.name}</span>${err?'<span style="color:#ef4444;font-size:0.7rem">NO RF</span>':''}</div>`;
+            lns.forEach(l => {
+                h += `<div class="wire-row"><div><span class="pin-badge">${l.pinIdx}</span><span class="${l.role==='G'?'role-G':'role-S'}">${l.role}</span></div><div>Pad ${l.lbl}</div></div>`;
+            });
+            card.innerHTML=h; lst.appendChild(card);
+        });
+    }
+}
+
+window.onload = () => new App();
+</script>
+</body>
+</html>
