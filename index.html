@@ -2,135 +2,110 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bonding Optimizer Mobile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bonding Layout Optimizer: Final</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --bg-app: #0f172a;
-            --bg-panel: #1e293b;
+            --bg-panel: rgba(30, 41, 59, 0.95);
             --text-main: #f1f5f9;
             --text-muted: #94a3b8;
             --accent: #3b82f6; 
-            --accent-glow: rgba(59, 130, 246, 0.4);
+            --accent-glow: rgba(59, 130, 246, 0.5);
             --success: #10b981;
             --danger: #ef4444;
-            --border: rgba(148, 163, 184, 0.15);
+            --warning: #f59e0b;
+            --border: rgba(148, 163, 184, 0.2);
         }
-
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: 'Inter', sans-serif; margin: 0; 
+            font-family: 'Inter', sans-serif;
+            margin: 0; display: flex; height: 100vh;
             background-color: var(--bg-app); color: var(--text-main);
-            height: 100vh; display: flex; overflow: hidden;
+            overflow: hidden; user-select: none;
         }
 
-        /* --- Layout --- */
-        /* Desktop Default */
-        #app-container {
-            display: flex; width: 100%; height: 100%;
-        }
+        /* Sidebar */
         #sidebar {
             width: 360px; background-color: var(--bg-app);
             border-right: 1px solid var(--border);
-            display: flex; flex-direction: column; padding: 20px;
-            z-index: 20; box-shadow: 5px 0 20px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; padding: 24px;
+            z-index: 20; box-shadow: 10px 0 30px rgba(0,0,0,0.3);
             overflow-y: auto;
         }
-        #canvas-wrapper {
-            flex-grow: 1; position: relative; background-color: #020617;
-            background-image: radial-gradient(#334155 1.5px, transparent 1.5px);
-            background-size: 20px 20px;
-            display: flex; justify-content: center; align-items: center; overflow: hidden;
-        }
 
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            #app-container { flex-direction: column; }
-            #sidebar {
-                width: 100%; height: 45%; order: 2; border-right: none; border-top: 1px solid var(--border);
-                padding: 16px; box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
-            }
-            #canvas-wrapper { height: 55%; order: 1; }
-            .brand { font-size: 1.1rem; margin-bottom: 12px; }
-            .btn { padding: 12px; font-size: 0.85rem; }
-        }
-
-        /* --- Components --- */
         .brand {
-            font-size: 1.3rem; font-weight: 800; margin-bottom: 20px;
+            font-size: 1.4rem; font-weight: 800; margin-bottom: 20px;
+            color: #fff; letter-spacing: -0.03em;
             background: linear-gradient(90deg, #fff, #94a3b8);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            display: inline-block;
         }
 
-        .btn {
-            width: 100%; padding: 14px; border: none; border-radius: 12px;
-            font-size: 0.95rem; font-weight: 700; cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.1s;
-            margin-bottom: 12px; position: relative; overflow: hidden;
-        }
-        .btn:active { transform: scale(0.98); }
         .btn-primary {
-            background: linear-gradient(135deg, var(--accent), #2563eb); color: white;
-            box-shadow: 0 4px 12px var(--accent-glow);
+            width: 100%; padding: 16px;
+            background: linear-gradient(135deg, var(--accent), #2563eb);
+            color: white; border: none; border-radius: 12px;
+            font-size: 0.95rem; font-weight: 700; cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px var(--accent-glow);
+            letter-spacing: 0.02em; margin-bottom: 20px;
         }
-        .btn-secondary {
-            background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text-muted);
-        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px var(--accent-glow); }
+        .btn-primary:active { transform: translateY(0); }
 
         .section-header {
             font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;
-            color: var(--text-muted); margin: 20px 0 10px 0; font-weight: 700;
+            color: var(--text-muted); margin: 24px 0 12px 0; font-weight: 700;
             display: flex; align-items: center; gap: 8px;
         }
         .section-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-        /* Toggles & Controls */
-        .control-panel {
-            background: var(--bg-panel); padding: 12px; border-radius: 10px;
-            border: 1px solid var(--border); margin-bottom: 10px;
+        /* Rod Selection Buttons */
+        .btn-group { display: flex; gap: 8px; margin-bottom: 10px; }
+        .btn-outline {
+            flex: 1; padding: 10px; background: transparent;
+            border: 1px solid var(--border); color: var(--text-muted);
+            border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;
+            transition: all 0.2s;
         }
-        .toggle-row { display: flex; align-items: center; justify-content: space-between; }
-        .toggle-switch { position: relative; width: 44px; height: 24px; }
+        .btn-outline:hover { border-color: var(--accent); color: #fff; background: rgba(255,255,255,0.05); }
+        .btn-outline.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 10px var(--accent-glow); }
+
+        /* Toggle */
+        .toggle-container {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+            padding: 12px; background: var(--bg-panel); border-radius: 8px; border: 1px solid var(--border);
+        }
+        .toggle-switch { position: relative; width: 44px; height: 24px; display: inline-block; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .slider-tog {
+        .slider {
             position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #475569; transition: .3s; border-radius: 34px;
+            background-color: #475569; transition: .4s; border-radius: 34px;
         }
-        .slider-tog:before {
+        .slider:before {
             position: absolute; content: ""; height: 18px; width: 18px;
-            left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%;
+            left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;
         }
-        input:checked + .slider-tog { background-color: var(--accent); }
-        input:checked + .slider-tog:before { transform: translateX(20px); }
-        .control-label { font-size: 0.9rem; font-weight: 600; color: #fff; }
-        
-        /* Range Slider for Size */
-        .range-wrap { margin-top: 12px; display: none; animation: fadeIn 0.3s; }
-        .range-wrap.show { display: block; }
-        input[type=range] {
-            width: 100%; -webkit-appearance: none; background: transparent;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%;
-            background: #fff; cursor: pointer; margin-top: -7px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 4px; cursor: pointer; background: #475569; border-radius: 2px;
-        }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .toggle-label { font-size: 0.9rem; font-weight: 600; color: #fff; }
 
-        /* Stats & List */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .stat-item { background: var(--bg-panel); padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
-        .stat-label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; }
-        .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 700; margin-top: 2px; }
-        .stat-val.bad { color: var(--danger); } .stat-val.good { color: var(--success); }
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .stat-item { background: var(--bg-panel); padding: 12px; border-radius: 8px; border: 1px solid var(--border); }
+        .stat-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; }
+        .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; margin-top: 4px; }
+        .stat-val.bad { color: var(--danger); }
+        .stat-val.good { color: var(--success); }
 
-        #connection-list { display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; }
+        /* List */
+        #connection-list { display: flex; flex-direction: column; gap: 12px; }
         .dev-card {
-            background: var(--bg-panel); border-radius: 8px; border: 1px solid var(--border); overflow: hidden;
+            background: var(--bg-panel); border-radius: 8px; border: 1px solid var(--border);
+            overflow: hidden; transition: border-color 0.2s;
         }
         .dev-card.error { border-color: var(--danger); }
         .dev-title {
@@ -138,282 +113,436 @@
             display: flex; justify-content: space-between; align-items: center;
         }
         .wire-row {
-            padding: 8px 12px; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text-muted);
+            padding: 8px 12px; border-top: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-muted);
             display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; transition: background 0.2s;
         }
+        .wire-row:hover { background: rgba(255,255,255,0.05); color: #fff; }
         .pin-badge {
-            display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px;
-            background: #334155; border-radius: 4px; font-size: 0.7rem; margin-right: 6px; color: #fff;
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px; background: #334155;
+            border-radius: 4px; font-size: 0.75rem; margin-right: 6px; color: #fff;
         }
-        .role-S, .role-D { color: var(--accent); font-weight: bold; } .role-G { color: #eab308; font-weight: bold; }
+        .role-tag { font-weight: bold; margin-right: 4px; }
+        .role-G { color: #eab308; }
+        .role-S, .role-D { color: var(--accent); }
 
-        /* Overlays */
+        /* Canvas */
+        #canvas-wrapper {
+            flex-grow: 1; position: relative; background-color: #020617;
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 20px 20px;
+            display: flex; justify-content: center; align-items: center; overflow: hidden;
+        }
+        canvas { border-radius: 4px; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
         #edit-mode-overlay {
-            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
-            background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5);
-            color: #fbbf24; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;
-            pointer-events: none; display: none; backdrop-filter: blur(4px); z-index: 10;
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.5);
+            color: #fbbf24; padding: 8px 24px; border-radius: 20px;
+            font-size: 0.85rem; font-weight: 700; letter-spacing: 0.05em;
+            pointer-events: none; display: none; backdrop-filter: blur(4px);
         }
 
+        /* Toasts */
         #toast-container {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            display: flex; flex-direction: column; gap: 8px; pointer-events: none; width: 90%; max-width: 320px; z-index: 10;
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; gap: 10px; pointer-events: none; width: 300px;
         }
         .toast {
-            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px);
-            color: #fff; padding: 10px 16px; border-radius: 50px; font-size: 0.85rem; font-weight: 600;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
+            background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(8px);
+            color: #fff; padding: 12px 20px; border-radius: 50px;
+            font-size: 0.9rem; font-weight: 600;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5); opacity: 0; transform: translateY(20px);
-            transition: all 0.3s; border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255,255,255,0.1);
         }
         .toast.show { opacity: 1; transform: translateY(0); }
         .toast.error { border-color: var(--danger); color: #fca5a5; }
-
-        @keyframes fadeIn { from { opacity: 0; height: 0; } to { opacity: 1; height: 30px; } }
     </style>
 </head>
 <body>
 
-<div id="app-container">
-    <div id="sidebar">
-        <div class="brand">Bonding Optimizer</div>
-        
-        <div class="control-panel">
-            <div class="toggle-row">
-                <span class="control-label">Edit Layout Mode</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="chk-move-pads">
-                    <span class="slider-tog"></span>
-                </label>
-            </div>
-            <div class="range-wrap" id="size-control">
-                <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#94a3b8; margin-bottom:4px;">
-                    <span>Pad Size</span><span>Drag to resize</span>
-                </div>
-                <input type="range" id="rng-size" min="0.1" max="1.0" step="0.05" value="0.35">
-            </div>
+<div id="sidebar">
+    <div class="brand">Bonding Optimizer</div>
+    
+    <div class="section-header">Select Rod</div>
+    <div class="btn-group">
+        <button class="btn-outline" id="btn-rod-ariel" onclick="app.loadRod('Ariel')">Ariel</button>
+        <button class="btn-outline" id="btn-rod-belle" onclick="app.loadRod('Belle')">Belle</button>
+        <button class="btn-outline" id="btn-rod-donald" onclick="app.loadRod('Donald')">Donald</button>
+    </div>
+
+    <div class="toggle-container">
+        <label class="toggle-switch">
+            <input type="checkbox" id="chk-move-pads">
+            <span class="slider"></span>
+        </label>
+        <span class="toggle-label">Move Pads (Edit Layout)</span>
+    </div>
+
+    <button id="btn-calc" class="btn-primary">Optimize Layout (SA)</button>
+
+    <div class="section-header">Stats</div>
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-label">Crossings</div>
+            <div class="stat-val" id="val-cross">-</div>
         </div>
-
-        <button id="btn-calc" class="btn btn-primary">Optimize Layout (SA)</button>
-        <button id="btn-reset" class="btn btn-secondary">Reset Layout</button>
-
-        <div class="section-header">Stats</div>
-        <div class="stats-grid">
-            <div class="stat-item">
-                <div class="stat-label">Crossings</div>
-                <div class="stat-val" id="val-cross">-</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Critical</div>
-                <div class="stat-val" id="val-crit">-</div>
-            </div>
-            <div class="stat-item" style="grid-column: span 2;">
-                <div class="stat-label">Total Wire Length</div>
-                <div class="stat-val" id="val-len">-</div>
-            </div>
+        <div class="stat-item">
+            <div class="stat-label">Critical Miss</div>
+            <div class="stat-val" id="val-crit">-</div>
         </div>
-
-        <div class="section-header">Connections</div>
-        <div id="connection-list">
-            <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
-                Ready.
-            </div>
+        <div class="stat-item" style="grid-column: span 2;">
+            <div class="stat-label">Total Wire Length</div>
+            <div class="stat-val" id="val-len">-</div>
         </div>
     </div>
 
-    <div id="canvas-wrapper">
-        <canvas id="mainCanvas"></canvas>
-        <div id="edit-mode-overlay">EDIT MODE</div>
-        <div id="toast-container">
-            <div id="toast-cross" class="toast error"><span>⚠️</span> Crossing Detected</div>
-            <div id="toast-rf" class="toast error"><span>⚠️</span> No RF Connection</div>
-            <div id="toast-save" class="toast"><span>💾</span> Saved</div>
+    <div class="section-header">Connections</div>
+    <div id="connection-list">
+        <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+            Ready to calculate.
         </div>
+    </div>
+</div>
+
+<div id="canvas-wrapper">
+    <canvas id="mainCanvas"></canvas>
+    <div id="edit-mode-overlay">EDIT MODE: DRAG PADS</div>
+    <div id="toast-container">
+        <div id="toast-cross" class="toast error"><span>⚠️</span> Wire Crossing Detected</div>
+        <div id="toast-rf" class="toast error"><span>⚠️</span> Missing RF Connection</div>
     </div>
 </div>
 
 <script>
 /* =========================================
-   CONFIG
+   ROD CONFIGURATION (EDIT HERE)
    ========================================= */
-const GRID_SIZE = 12;
-const PAD_CONFIG = {
+// 各Rodのパッド番号定義と、故障箇所(broken)のインデックス
+// 配列の順序: TOP(0-5), RIGHT(6-11), BOTTOM(12-17), LEFT(18-23)
+const ROD_PRESETS = {
+    'Ariel': {
+        labels: {
+            'TOP':    [1, 2, 3, 4, 5, 6],
+            'RIGHT':  [7, 8, 9, 10, 11, 12],
+            'BOTTOM': [13, 14, 15, 16, 17, 18],
+            'LEFT':   [19, 20, 21, 22, 23, 24]
+        },
+        // 壊れているパッドのインデックス(0〜23)。ここは赤色のパッドになります。
+        broken: [0, 5, 12, 23] 
+    },
+    'Belle': {
+        labels: {
+            'TOP':    [24, 23, 22, 21, 20, 19],
+            'RIGHT':  [18, 17, 16, 15, 14, 13],
+            'BOTTOM': [12, 11, 10, 9, 8, 7],
+            'LEFT':   [6, 5, 4, 3, 2, 1]
+        },
+        broken: [2, 3, 15] // 別の故障箇所
+    },
+    'Donald': {
+        labels: {
+            'TOP':    [101, 102, 103, 104, 105, 106],
+            'RIGHT':  [201, 202, 203, 204, 205, 206],
+            'BOTTOM': [301, 302, 303, 304, 305, 306],
+            'LEFT':   [401, 402, 403, 404, 405, 406]
+        },
+        broken: [6, 7, 8, 9, 10, 11] // 右側全部壊れている等
+    }
+};
+
+// デフォルトの設定（何も選択されていない時）
+const DEFAULT_PAD_CONFIG = {
     'TOP':    [6, 10, 24, 7, 5, 16],
     'RIGHT':  [1, 14, 18, 19, 20, 21],
     'BOTTOM': [12, 2, 3, 4, 8, 22],
     'LEFT':   [11, 9, 23, 13, 15, 17]
 };
-const COLORS = {
-    BG: '#020617', GRID: '#334155', BORDER: '#475569',
+
+const GRID_SIZE = 12;
+
+const THEME = {
+    GRID_1: '#f8fafc', GRID_2: '#f1f5f9', GRID_BORDER: '#334155',
     PAD_G: '#22c55e', PAD_X: '#ef4444', PAD_RF: '#3b82f6',
-    PIN_G: '#eab308', PIN_RF: '#3b82f6', PIN_OFF: '#cbd5e1',
+    PIN_OFF: '#cbd5e1', PIN_G: '#eab308', PIN_RF: '#3b82f6',
     WIRE_G: '#f59e0b', WIRE_RF: '#3b82f6',
-    DEV: '#1e293b', DEV_B: '#64748b', DEV_SEL: '#8b5cf6',
-    EDIT: '#f59e0b'
+    DEV_BODY: 'rgba(71, 85, 105, 0.05)', DEV_BORDER: '#64748b', DEV_SEL: '#8b5cf6',
+    HIGHLIGHT: '#d946ef', EDIT_PAD_BORDER: '#f59e0b'
 };
 
 /* =========================================
-   CORE LOGIC (Optimized for Mobile)
+   MATH HELPERS
    ========================================= */
 const dist = (x1, y1, x2, y2) => Math.sqrt((x1-x2)**2 + (y1-y2)**2);
 
 const checkIntersection = (p1, p2, p3, p4) => {
     const d = (p2.x - p1.x) * (p4.y - p3.y) - (p2.y - p1.y) * (p4.x - p3.x);
-    if (Math.abs(d) < 1e-9) return false;
+    if (Math.abs(d) < 1e-9) return false; 
     const u = ((p3.x - p1.x) * (p4.y - p3.y) - (p3.y - p1.y) * (p4.x - p3.x)) / d;
     const v = ((p3.x - p1.x) * (p2.y - p1.y) - (p3.y - p1.y) * (p2.x - p1.x)) / d;
     return (u > 0.001 && u < 0.999) && (v > 0.001 && v < 0.999);
 };
 
-const getPadConnectionPoint = (pin, pad, angleOffset) => {
-    const baseAngle = Math.atan2(pin.y - pad.y, pin.x - pad.x);
-    const finalAngle = baseAngle + angleOffset;
-    if (pad.shape === 'square') {
-        const cos = Math.cos(finalAngle), sin = Math.sin(finalAngle);
-        const absCos = Math.abs(cos), absSin = Math.abs(sin);
-        let ix, iy;
-        if (absCos > absSin) {
-            ix = Math.sign(cos) * pad.r; iy = ix * (sin / cos);
-        } else {
-            iy = Math.sign(sin) * pad.r; ix = iy * (cos / sin);
-        }
-        return { x: pad.x + ix, y: pad.y + iy };
-    }
-    return { x: pad.x + Math.cos(finalAngle)*pad.r, y: pad.y + Math.sin(finalAngle)*pad.r };
-};
-
-class Optimizer {
+/* =========================================
+   LOGIC: OPTIMIZER (Simulated Annealing)
+   ========================================= */
+class LayoutOptimizer {
     constructor(devices, pads, padStatus) {
-        this.pins = []; this.pads = []; this.devGroups = {};
-        devices.forEach((d, di) => {
-            this.devGroups[di] = [];
-            d.getAbsPins().forEach(p => {
+        this.pins = [];
+        this.pads = []; 
+        this.deviceGroups = {}; 
+
+        devices.forEach((d, dIdx) => {
+            this.deviceGroups[dIdx] = [];
+            d.getAbsPins().forEach((p) => {
                 if (p.active) {
                     const idx = this.pins.length;
-                    this.pins.push({idx, x:p.x, y:p.y, role:p.role, devIdx:di, orig:p.index});
-                    this.devGroups[di].push(idx);
+                    this.pins.push({
+                        idx: idx,
+                        x: p.x, y: p.y,
+                        role: p.role, 
+                        devIdx: dIdx,
+                        origPinIdx: p.index
+                    });
+                    this.deviceGroups[dIdx].push(idx);
                 }
             });
         });
+
         pads.forEach((p, i) => {
-            if (padStatus[i] !== 1) this.pads.push({...p, idx:this.pads.length, origIdx:i, st:padStatus[i]});
+            const st = padStatus[i];
+            if (st !== 1) { // 1 = Forbidden/Broken
+                this.pads.push({
+                    idx: this.pads.length,
+                    origIdx: i,
+                    x: p.x, y: p.y,
+                    status: st, 
+                    lbl: p.lbl
+                });
+            }
         });
-        this.allowed = this.pins.map(pn => this.pads.filter(pd => pn.role==='G'?pd.st===0:true).map(p=>p.idx));
+
+        this.allowedPads = this.pins.map(pin => {
+            return this.pads.filter(pad => {
+                if (pin.role === 'G') return pad.status === 0;
+                return true; 
+            }).map(p => p.idx);
+        });
     }
 
     solve() {
         const N = this.pins.length;
-        if (N===0) return {lines:[], stats:{cross:0, crit:0, len:0}};
+        if (N === 0) return { lines: [], stats: { cross:0, crit:0, len:0 } };
+
+        let currentAssign = new Array(N).fill(-1);
+        let usedPads = new Set();
         
-        let assign = new Array(N).fill(-1), angles = new Array(N).fill(0), used = new Set();
-        
-        // Greedy Init
-        const ord = this.pins.map(p=>p.idx).sort((a,b)=>(this.pins[a].role!=='G'? -1:1));
-        ord.forEach(i => {
-            let best=-1, min=Infinity; const pn=this.pins[i];
-            this.allowed[i].forEach(pid => {
-                if (used.has(pid)) return;
-                let d = dist(pn.x, pn.y, this.pads[pid].x, this.pads[pid].y);
-                if (['S','D'].includes(pn.role) && this.pads[pid].st===2) d-=1000;
-                if (d<min) { min=d; best=pid; }
-            });
-            if (best!==-1) { assign[i]=best; used.add(best); }
+        const pinOrder = this.pins.map(p => p.idx).sort((a,b) => {
+            const ra = this.pins[a].role !== 'G';
+            const rb = this.pins[b].role !== 'G';
+            return (ra === rb) ? 0 : (ra ? -1 : 1);
         });
 
-        // SA
-        let curC = this.cost(assign, angles), bestAss=[...assign], bestAng=[...angles], bestV=curC.val;
-        let t=80, cool=0.92;
-        while(t>0.05) {
-            for(let k=0; k<Math.min(150, N*10); k++) {
-                let nAss=[...assign], nAng=[...angles];
-                if(Math.random()<0.2) { // Swap
-                    const i = Math.floor(Math.random()*N), j = Math.floor(Math.random()*N);
-                    if(nAss[i]!==-1 && nAss[j]!==-1 && this.allowed[i].includes(nAss[j]) && this.allowed[j].includes(nAss[i])) {
-                        [nAss[i], nAss[j]] = [nAss[j], nAss[i]]; nAng[i]=0; nAng[j]=0;
-                    }
-                } else if(Math.random()<0.3) { // Move
-                    const i = Math.floor(Math.random()*N);
-                    if(nAss[i]!==-1) {
-                        const u = this.allowed[i].filter(pid => !new Set(nAss).has(pid));
-                        if(u.length>0) { nAss[i]=u[Math.floor(Math.random()*u.length)]; nAng[i]=0; }
-                    }
-                } else { // Angle
-                    const i = Math.floor(Math.random()*N);
-                    if(nAss[i]!==-1) {
-                        nAng[i] += (Math.random()-0.5)*0.6;
-                        nAng[i] = Math.max(-1, Math.min(1, nAng[i]));
-                    }
+        pinOrder.forEach(pIdx => {
+            const pin = this.pins[pIdx];
+            const allowed = this.allowedPads[pIdx];
+            let bestP = -1, minCost = Infinity;
+
+            allowed.forEach(padIdx => {
+                if (usedPads.has(padIdx)) return;
+                const pad = this.pads[padIdx];
+                let c = dist(pin.x, pin.y, pad.x, pad.y);
+                if (['S','D'].includes(pin.role) && pad.status === 2) c -= 1000;
+                if (c < minCost) { minCost = c; bestP = padIdx; }
+            });
+
+            if (bestP !== -1) {
+                currentAssign[pIdx] = bestP;
+                usedPads.add(bestP);
+            }
+        });
+
+        let currentCostObj = this.calculateCost(currentAssign);
+        let bestAssign = [...currentAssign];
+        let bestCostVal = currentCostObj.val;
+
+        let temp = 100.0;
+        const coolingRate = 0.95;
+        const minTemp = 0.01;
+        const iterPerTemp = Math.min(200, N * 10);
+
+        while (temp > minTemp) {
+            for (let k = 0; k < iterPerTemp; k++) {
+                const newAssign = [...currentAssign];
+                const mode = Math.random();
+                
+                if (mode < 0.8) { 
+                    const i = Math.floor(Math.random() * N);
+                    const j = Math.floor(Math.random() * N);
+                    if (i === j || newAssign[i] === -1 || newAssign[j] === -1) continue;
+                    
+                    const p1 = newAssign[i], p2 = newAssign[j];
+                    if (this.allowedPads[i].includes(p2) && this.allowedPads[j].includes(p1)) {
+                        newAssign[i] = p2; newAssign[j] = p1;
+                    } else { continue; }
+                } else {
+                    const i = Math.floor(Math.random() * N);
+                    if (newAssign[i] === -1) continue;
+                    
+                    const currentUsed = new Set(newAssign.filter(x => x !== -1));
+                    const candidates = this.allowedPads[i].filter(pid => !currentUsed.has(pid));
+                    
+                    if (candidates.length > 0) {
+                        const target = candidates[Math.floor(Math.random() * candidates.length)];
+                        newAssign[i] = target;
+                    } else { continue; }
                 }
-                const nC = this.cost(nAss, nAng);
-                if(nC.val < curC.val || Math.random() < Math.exp(-(nC.val-curC.val)/t)) {
-                    assign=nAss; angles=nAng; curC=nC;
-                    if(nC.val < bestV) { bestAss=[...nAss]; bestAng=[...nAng]; bestV=nC.val; }
+
+                const newCostObj = this.calculateCost(newAssign);
+                const delta = newCostObj.val - currentCostObj.val;
+
+                if (delta < 0 || Math.random() < Math.exp(-delta / temp)) {
+                    currentAssign = newAssign;
+                    currentCostObj = newCostObj;
+
+                    if (currentCostObj.val < bestCostVal) {
+                        bestAssign = [...currentAssign];
+                        bestCostVal = currentCostObj.val;
+                    }
                 }
             }
-            t*=cool;
+            temp *= coolingRate;
         }
 
-        const resLines = [];
-        bestAss.forEach((pid, i) => {
-            if(pid===-1) return;
-            const pn=this.pins[i], pd=this.pads[pid], pt=getPadConnectionPoint(pn, pd, bestAng[i]);
-            const isRF = ['S','D'].includes(pn.role) && pd.st===2;
-            resLines.push({
-                s:{x:pn.x, y:pn.y}, e:{x:pt.x, y:pt.y}, type:isRF?'RF':'Gate',
-                devIdx:pn.devIdx, pinIdx:pn.orig, role:pn.role, lbl:pd.lbl
+        const finalStats = this.calculateCost(bestAssign);
+
+        const resultLines = [];
+        bestAssign.forEach((padIdx, pinIdx) => {
+            if (padIdx === -1) return;
+            const pin = this.pins[pinIdx];
+            const pad = this.pads[padIdx];
+            const isRFWire = ['S','D'].includes(pin.role) && pad.status === 2;
+            
+            resultLines.push({
+                start: {x: pin.x, y: pin.y},
+                end: {x: pad.x, y: pad.y},
+                type: isRFWire ? 'RF' : 'Gate',
+                devIdx: pin.devIdx,
+                pinIdx: pin.origPinIdx,
+                role: pin.role,
+                padLbl: pad.lbl
             });
         });
-        return { lines:resLines, stats:this.cost(bestAss, bestAng) };
+
+        return {
+            lines: resultLines,
+            stats: {
+                cross: finalStats.cross,
+                crit: finalStats.crit,
+                len: finalStats.len
+            }
+        };
     }
 
-    cost(assign, angles) {
-        let len=0, pref=0, devRF={}, segs=[];
-        assign.forEach((pid, i) => {
-            if(pid===-1) return;
-            const pn=this.pins[i], pd=this.pads[pid], pt=getPadConnectionPoint(pn, pd, angles[i]);
-            len += dist(pn.x, pn.y, pt.x, pt.y);
-            segs.push({x1:pn.x, y1:pn.y, x2:pt.x, y2:pt.y});
-            if(['S','D'].includes(pn.role)) {
-                if(pd.st===2) devRF[pn.devIdx]=true; else pref++;
+    calculateCost(assign) {
+        const W_CRIT  = 1e7; 
+        const W_CROSS = 1e5; 
+        const W_PREF  = 1e3; 
+        const W_LEN   = 1.0; 
+
+        let len = 0;
+        let prefPenalty = 0;
+        let devHasRF = {}; 
+
+        const segments = [];
+
+        assign.forEach((padIdx, pinIdx) => {
+            if (padIdx === -1) return;
+            const pin = this.pins[pinIdx];
+            const pad = this.pads[padIdx];
+
+            len += dist(pin.x, pin.y, pad.x, pad.y);
+            segments.push({x1: pin.x, y1: pin.y, x2: pad.x, y2: pad.y});
+
+            if (['S','D'].includes(pin.role)) {
+                if (pad.status === 2) {
+                    devHasRF[pin.devIdx] = true;
+                } else {
+                    prefPenalty++; 
+                }
             }
         });
-        let crit=0;
-        Object.keys(this.devGroups).forEach(di => {
-            if(this.devGroups[di].some(i=>['S','D'].includes(this.pins[i].role)) && !devRF[di]) crit++;
+
+        let crit = 0;
+        Object.keys(this.deviceGroups).forEach(dIdx => {
+            const groupPins = this.deviceGroups[dIdx];
+            const hasActiveRF = groupPins.some(pidx => ['S','D'].includes(this.pins[pidx].role));
+            if (hasActiveRF && !devHasRF[dIdx]) {
+                crit++;
+            }
         });
-        let cross=0;
-        for(let i=0; i<segs.length; i++) for(let j=i+1; j<segs.length; j++) {
-            if(checkIntersection(segs[i], segs[i], segs[j], segs[j])) cross++; // struct compatible
+
+        let cross = 0;
+        const segCount = segments.length;
+        for (let i = 0; i < segCount; i++) {
+            for (let j = i + 1; j < segCount; j++) {
+                const s1 = segments[i], s2 = segments[j];
+                if (checkIntersection(
+                    {x:s1.x1, y:s1.y1}, {x:s1.x2, y:s1.y2},
+                    {x:s2.x1, y:s2.y1}, {x:s2.x2, y:s2.y2}
+                )) {
+                    cross++;
+                }
+            }
         }
-        return { val: crit*1e7 + cross*1e5 + pref*1e3 + len, crit, cross, len };
+
+        const total = (crit * W_CRIT) + (cross * W_CROSS) + (prefPenalty * W_PREF) + (len * W_LEN);
+        return { val: total, crit, cross, len };
     }
 }
 
 /* =========================================
-   APP CLASS
+   UI & APP
    ========================================= */
-class Device {
+class DeviceModel {
     constructor(name, w, h, x, y) {
-        this.name=name; this.w=w; this.h=h; this.pos={x,y}; this.pins=[];
-        const xr=Array.from({length:w}, (_,i)=>-(w-1)/2+i), yr=Array.from({length:h}, (_,i)=>-(h-1)/2+i);
-        xr.forEach(px=>yr.forEach(py=>this.pins.push({rel:{x:px,y:py}, active:true, role:'G'})));
-        this.pins.sort((a,b)=>a.rel.y-b.rel.y);
-        this.pins[0].role='S'; this.pins[this.pins.length-1].role='D';
+        this.name = name; this.w = w; this.h = h;
+        this.pos = {x, y};
+        this.pins = [];
+        const xr = Array.from({length:w}, (_,i) => -(w-1)/2 + i);
+        const yr = Array.from({length:h}, (_,i) => -(h-1)/2 + i);
+        xr.forEach(px => yr.forEach(py => this.pins.push({ rel:{x:px, y:py}, active:true, role:'G' })));
+        this.pins.sort((a,b) => a.rel.y - b.rel.y);
+        this.pins[0].role = 'S'; this.pins[this.pins.length-1].role = 'D';
     }
-    getAbsPins() { return this.pins.map((p,i)=>({x:this.pos.x+p.rel.x, y:this.pos.y+p.rel.y, active:p.active, role:p.role, index:i})); }
+    getAbsPins() {
+        return this.pins.map((p, i) => ({
+            x: this.pos.x + p.rel.x, y: this.pos.y + p.rel.y,
+            active: p.active, role: p.role, index: i
+        }));
+    }
     toggle(i) { this.pins[i].active = !this.pins[i].active; }
     cycle(i) {
-        const p = this.pins[i]; const r = p.role==='G'?'S':(p.role==='S'?'D':'G');
-        if(['S','D'].includes(r)) { const old=this.pins.findIndex(x=>x.role===r); if(old!==-1) this.pins[old].role='G'; }
-        p.role = r;
+        const p = this.pins[i];
+        if(p.role === 'G') this.setSmart(i, 'S');
+        else if(p.role === 'S') this.setSmart(i, 'D');
+        else p.role = 'G';
     }
-    snap() {
-        const s = (v,z) => z%2===0 ? Math.round(v-0.5)+0.5 : Math.round(v);
-        this.pos.x = Math.max(0, Math.min(11, s(this.pos.x, this.w)));
-        this.pos.y = Math.max(0, Math.min(11, s(this.pos.y, this.h)));
+    setSmart(i, r) {
+        if(['S','D'].includes(r)) {
+            const old = this.pins.findIndex(p => p.role === r);
+            if(old !== -1) this.pins[old].role = 'G';
+        }
+        this.pins[i].role = r;
     }
-    toJSON() { return {name:this.name, w:this.w, h:this.h, pos:this.pos, pins:this.pins}; }
-    static fromJSON(d) { const n=new Device(d.name, d.w, d.h, d.pos.x, d.pos.y); n.pins=d.pins; return n; }
+    snap(max) {
+        const s = (v, sz) => (sz%2===0) ? Math.round(v-0.5)+0.5 : Math.round(v);
+        this.pos.x = Math.max(0, Math.min(max, s(this.pos.x, this.w)));
+        this.pos.y = Math.max(0, Math.min(max, s(this.pos.y, this.h)));
+    }
 }
 
 class App {
@@ -421,319 +550,357 @@ class App {
         this.canvas = document.getElementById('mainCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.scale = 50; 
-        this.loadState();
+
+        this.devices = [
+            new DeviceModel('SQD', 2, 4, 3.5, 3.5),
+            new DeviceModel('DQD', 2, 5, 7.5, 7.0)
+        ];
+        this.selDev = 0;
+        this.pads = []; 
+        this.padSt = new Array(24).fill(0);
+        this.initPads(); // 初期パッド生成
+
         this.lines = [];
-        
-        // Interaction State
-        this.editMode = false;
+        this.highlightWire = null;
+        this.isPadEditMode = false;
         this.drag = { active:false, type:null, idx:-1, off:{x:0,y:0} };
-        this.longPressTimer = null;
-        
-        this.setupListeners();
+
+        this.setup();
         this.resize();
         window.addEventListener('resize', () => this.resize());
     }
 
-    loadState() {
-        const s = localStorage.getItem('bond_opt_mobile');
-        if (s) {
-            const d = JSON.parse(s);
-            this.devices = d.devices.map(x=>Device.fromJSON(x));
-            this.pads = d.pads; this.padSt = d.padSt;
-        } else {
-            this.initDefault();
-        }
-    }
-    saveState() {
-        localStorage.setItem('bond_opt_mobile', JSON.stringify({
-            devices: this.devices.map(d=>d.toJSON()), pads: this.pads, padSt: this.padSt
+    // 初期化：パッドの位置情報を生成（ラベルは後で上書き可能）
+    initPads() {
+        this.pads = [];
+        const max = GRID_SIZE-1;
+        const pts = (s,e,n) => Array.from({length:n}, (_,i)=>s+(e-s)/(n-1)*i);
+        const p = pts(0, max, 6);
+        const rp = [...p].reverse();
+        const l = -3.0, h = max + 3.0;
+
+        // デフォルト設定を使って初期化
+        const add = (arr, cfg, axis, val) => arr.forEach((v, i) => this.pads.push({ 
+            x: axis==='x'?v:val, y: axis==='y'?v:val, lbl: cfg[i] 
         }));
-        this.toast('toast-save', 1500);
-    }
-    initDefault() {
-        this.devices = [ new Device('SQD', 2, 4, 3.5, 3.5), new Device('DQD', 2, 5, 7.5, 7.0) ];
-        this.padSt = new Array(24).fill(0); this.pads = [];
-        const pts=(s,e,n)=>Array.from({length:n},(_,i)=>s+(e-s)/(n-1)*i);
-        const p=pts(0,11,6), rp=[...p].reverse(), add=(a,c,ax,v)=>a.forEach((val,i)=>this.pads.push({x:ax==='x'?val:v, y:ax==='y'?val:v, lbl:c[i], r:0.35, shape:'circle'}));
-        add(p,PAD_CONFIG.TOP,'x',14); add(rp,PAD_CONFIG.RIGHT,'y',14);
-        add(rp,PAD_CONFIG.BOTTOM,'x',-3); add(p,PAD_CONFIG.LEFT,'y',-3);
+        
+        add(p, DEFAULT_PAD_CONFIG.TOP, 'x', h);
+        add(rp, DEFAULT_PAD_CONFIG.RIGHT, 'y', h);
+        add(rp, DEFAULT_PAD_CONFIG.BOTTOM, 'x', l);
+        add(p, DEFAULT_PAD_CONFIG.LEFT, 'y', l);
     }
 
-    // Coord Transform
-    toScr(lx, ly) {
-        const cx=this.canvas.width/2, cy=this.canvas.height/2, gc=5.5;
-        return {x: cx+(lx-gc)*this.scale, y: cy-(ly-gc)*this.scale};
+    // Rod選択機能
+    loadRod(rodName) {
+        const config = ROD_PRESETS[rodName];
+        if (!config) return;
+
+        // ボタンのUI更新
+        ['Ariel', 'Belle', 'Donald'].forEach(name => {
+            const btn = document.getElementById('btn-rod-' + name.toLowerCase());
+            if (name === rodName) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+
+        // パッドのラベルとステータスを更新
+        // pads配列の順序: TOP(0-5), RIGHT(6-11), BOTTOM(12-17), LEFT(18-23)
+        let padIndex = 0;
+        const sides = ['TOP', 'RIGHT', 'BOTTOM', 'LEFT'];
+        
+        // 1. ラベル更新
+        sides.forEach(side => {
+            const labels = config.labels[side];
+            labels.forEach(lbl => {
+                if (this.pads[padIndex]) {
+                    this.pads[padIndex].lbl = lbl;
+                }
+                padIndex++;
+            });
+        });
+
+        // 2. 故障箇所(status=1)の更新
+        this.padSt.fill(0); // リセット
+        if (config.broken) {
+            config.broken.forEach(idx => {
+                if (idx >= 0 && idx < 24) this.padSt[idx] = 1; // 1 = Broken/Forbidden
+            });
+        }
+
+        // リセットして再描画
+        this.reset();
+        this.draw();
     }
+
+    toScr(lx, ly) {
+        const cx = this.canvas.width/2, cy = this.canvas.height/2;
+        const gc = (GRID_SIZE-1)/2;
+        return { x: cx + (lx-gc)*this.scale, y: cy - (ly-gc)*this.scale };
+    }
+    
     toLog(sx, sy) {
-        const cx=this.canvas.width/2, cy=this.canvas.height/2, gc=5.5;
-        return {x: (sx-cx)/this.scale+gc, y: gc-(sy-cy)/this.scale};
+        const cx = this.canvas.width/2, cy = this.canvas.height/2;
+        const gc = (GRID_SIZE-1)/2;
+        return { x: (sx-cx)/this.scale + gc, y: gc - (sy-cy)/this.scale };
     }
 
     draw() {
         const ctx = this.ctx;
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // 1. Grid
-        const b1=this.toScr(-0.5,-0.5), b2=this.toScr(11.5,11.5);
-        ctx.strokeStyle=COLORS.BORDER; ctx.lineWidth=2;
+        // Grid
+        for(let i=0; i<GRID_SIZE; i+=2) {
+            const p1 = this.toScr(i-0.5, -0.5);
+            const p2 = this.toScr(i+1.5, GRID_SIZE-0.5);
+            const x=Math.min(p1.x,p2.x), y=Math.min(p1.y,p2.y), w=Math.abs(p2.x-p1.x), h=Math.abs(p2.y-p1.y);
+            ctx.fillStyle = (i/2)%2===0 ? THEME.GRID_1 : THEME.GRID_2;
+            ctx.fillRect(x,y,w,h);
+        }
+        const b1 = this.toScr(-0.5, -0.5), b2 = this.toScr(GRID_SIZE-0.5, GRID_SIZE-0.5);
+        ctx.strokeStyle = THEME.GRID_BORDER; ctx.lineWidth = 4;
         ctx.strokeRect(Math.min(b1.x,b2.x), Math.min(b1.y,b2.y), Math.abs(b2.x-b1.x), Math.abs(b2.y-b1.y));
-        ctx.fillStyle = COLORS.GRID;
-        for(let x=0;x<12;x++) for(let y=0;y<12;y++) {
-            const p=this.toScr(x,y); ctx.beginPath(); ctx.arc(p.x,p.y,2,0,Math.PI*2); ctx.fill();
+        
+        ctx.fillStyle = '#cbd5e1';
+        for(let x=0; x<GRID_SIZE; x++) for(let y=0; y<GRID_SIZE; y++) {
+            const p = this.toScr(x,y);
+            ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
         }
 
-        // 2. Pads
-        this.pads.forEach((pd, i) => {
-            const p=this.toScr(pd.x, pd.y), r=pd.r*this.scale, st=this.padSt[i];
-            ctx.shadowBlur = st===2 ? 15 : 0; ctx.shadowColor = COLORS.PAD_RF;
-            ctx.fillStyle = st===0?COLORS.PAD_G : (st===1?COLORS.PAD_X:COLORS.PAD_RF);
-            ctx.beginPath();
-            if (pd.shape==='square') ctx.rect(p.x-r, p.y-r, r*2, r*2); else ctx.arc(p.x, p.y, r, 0, Math.PI*2);
-            ctx.fill(); ctx.shadowBlur=0;
+        // Pads
+        this.pads.forEach((pad, i) => {
+            const p = this.toScr(pad.x, pad.y);
+            const s = this.padSt[i];
             
-            if (this.editMode) {
-                ctx.strokeStyle = COLORS.EDIT; ctx.setLineDash([4,2]); ctx.lineWidth=2; ctx.stroke(); ctx.setLineDash([]);
-            } else {
-                ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth=1; ctx.stroke();
+            if (this.isPadEditMode) {
+                ctx.beginPath(); ctx.arc(p.x, p.y, 22, 0, Math.PI*2);
+                ctx.strokeStyle = THEME.EDIT_PAD_BORDER; ctx.lineWidth = 2; ctx.setLineDash([4, 2]); ctx.stroke(); ctx.setLineDash([]);
             }
-            ctx.fillStyle='#fff'; ctx.font='bold 12px Inter'; ctx.textAlign='center'; ctx.textBaseline='middle';
-            ctx.fillText(pd.lbl, p.x, p.y);
+
+            if (s===2) { ctx.shadowColor = THEME.PAD_RF; ctx.shadowBlur = 10; } 
+            else { ctx.shadowColor = 'rgba(0,0,0,0.1)'; ctx.shadowBlur = 5; }
+            
+            ctx.beginPath(); ctx.arc(p.x, p.y, 18, 0, Math.PI*2);
+            ctx.fillStyle = s===0?THEME.PAD_G : (s===1?THEME.PAD_X : THEME.PAD_RF);
+            ctx.fill(); ctx.shadowBlur = 0;
+            ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth=2; ctx.stroke();
+            
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 14px "JetBrains Mono"';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(pad.lbl, p.x, p.y+1);
         });
 
-        // 3. Devices
-        this.devices.forEach((d, di) => {
-            const c=this.toScr(d.pos.x, d.pos.y), w=d.w*this.scale, h=d.h*this.scale, sel=di===this.selDev;
+        // Devices
+        this.devices.forEach((dev, di) => {
+            const c = this.toScr(dev.pos.x, dev.pos.y);
+            const w = dev.w*this.scale, h = dev.h*this.scale;
+            const sel = di===this.selDev;
+            
             ctx.save(); ctx.translate(c.x, c.y);
-            ctx.fillStyle=COLORS.DEV; ctx.strokeStyle=sel?COLORS.DEV_SEL:COLORS.DEV_B; ctx.lineWidth=sel?3:2;
-            ctx.beginPath(); ctx.roundRect(-w/2,-h/2,w,h,10); ctx.fill(); ctx.stroke();
-            ctx.fillStyle=ctx.strokeStyle; ctx.font='bold 14px Inter'; ctx.fillText(d.name, 0, -h/2-15); ctx.restore();
+            ctx.fillStyle = THEME.DEV_BODY; ctx.strokeStyle = sel ? THEME.DEV_SEL : THEME.DEV_BORDER;
+            ctx.lineWidth = sel ? 3 : 2;
+            ctx.beginPath(); ctx.roundRect(-w/2, -h/2, w, h, 12); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = ctx.strokeStyle; ctx.font = 'bold 16px Inter';
+            ctx.fillText(dev.name, 0, -h/2 - 20);
+            ctx.restore();
 
-            const res = this.lines.length>0;
-            d.getAbsPins().forEach((pn, pi) => {
-                const p=this.toScr(pn.x, pn.y), isRF=['S','D'].includes(pn.role);
+            const hasResult = this.lines.length > 0;
+            dev.getAbsPins().forEach((pin, pi) => {
+                const p = this.toScr(pin.x, pin.y);
+                const isRF = ['S','D'].includes(pin.role);
                 ctx.beginPath();
-                if(!pn.active) {
-                    ctx.strokeStyle=COLORS.PIN_OFF; ctx.lineWidth=3;
-                    ctx.moveTo(p.x-4,p.y-4); ctx.lineTo(p.x+4,p.y+4); ctx.moveTo(p.x+4,p.y-4); ctx.lineTo(p.x-4,p.y+4); ctx.stroke();
+                if (!pin.active) {
+                    ctx.strokeStyle = THEME.PIN_OFF; ctx.lineWidth = 3; const r = 5;
+                    ctx.moveTo(p.x-r, p.y-r); ctx.lineTo(p.x+r, p.y+r);
+                    ctx.moveTo(p.x+r, p.y-r); ctx.lineTo(p.x-r, p.y+r); ctx.stroke();
                 } else {
-                    const r=res?10:7; ctx.arc(p.x, p.y, r, 0, Math.PI*2);
-                    ctx.fillStyle=isRF?COLORS.PIN_RF:COLORS.PIN_G; ctx.fill();
-                    ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
-                    if(res || isRF) {
-                        ctx.fillStyle='#fff'; ctx.font=res?'10px Mono':'9px Inter';
-                        ctx.fillText(res?pi:pn.role, p.x, p.y+(res?1.5:1));
+                    const r = hasResult ? 11 : 8;
+                    ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+                    ctx.fillStyle = isRF ? THEME.PIN_RF : THEME.PIN_G;
+                    ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+                    ctx.fillStyle = '#fff';
+                    if (hasResult) {
+                        ctx.font = 'bold 11px "JetBrains Mono"'; ctx.fillText(pi, p.x, p.y+1);
+                    } else if (isRF) {
+                        ctx.font = 'bold 9px Inter'; ctx.fillText(pin.role, p.x, p.y+1);
                     }
                 }
             });
         });
 
-        // 4. Wires
+        // Wires
         this.lines.forEach(l => {
-            const p1=this.toScr(l.s.x, l.s.y), p2=this.toScr(l.e.x, l.e.y);
-            ctx.strokeStyle = l.type==='RF'?COLORS.WIRE_RF:COLORS.WIRE_G;
-            ctx.lineWidth = l.type==='RF'?3:2; ctx.lineCap='round';
-            ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
-            ctx.beginPath(); ctx.arc(p2.x, p2.y, 3, 0, Math.PI*2); ctx.fillStyle='#000'; ctx.fill();
+            const p1 = this.toScr(l.start.x, l.start.y);
+            const p2 = this.toScr(l.end.x, l.end.y);
+            const isHigh = this.highlightWire && this.highlightWire.d === l.devIdx && this.highlightWire.p === l.pinIdx;
+
+            ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+            ctx.lineCap = 'round';
+            if (isHigh) {
+                ctx.lineWidth = 6; ctx.strokeStyle = THEME.HIGHLIGHT;
+                ctx.shadowColor = THEME.HIGHLIGHT; ctx.shadowBlur = 15;
+            } else {
+                ctx.lineWidth = l.type==='RF'?3.5:2;
+                ctx.strokeStyle = l.type==='RF'?THEME.WIRE_RF : THEME.WIRE_G;
+                ctx.shadowBlur = 0;
+            }
+            ctx.globalAlpha = isHigh ? 1.0 : 0.8; ctx.stroke();
+            ctx.globalAlpha = 1.0; ctx.shadowBlur = 0;
         });
     }
-
-    resize() {
-        const w=document.getElementById('canvas-wrapper');
-        this.canvas.width = w.clientWidth; this.canvas.height = w.clientHeight;
-        const min = Math.min(this.canvas.width, this.canvas.height);
-        this.scale = min / (GRID_SIZE + 6); // Add margin
+    
+    setHighlight(dIdx, pIdx) {
+        this.highlightWire = (dIdx === null) ? null : {d:dIdx, p:pIdx};
         this.draw();
     }
 
-    // --- Interaction ---
-    vibrate() { if(navigator.vibrate) navigator.vibrate(10); }
-
-    setupListeners() {
-        const getPos = (e) => {
+    resize() {
+        const w = document.getElementById('canvas-wrapper');
+        this.canvas.width = w.clientWidth; this.canvas.height = w.clientHeight;
+        const min = Math.min(this.canvas.width, this.canvas.height);
+        this.scale = min / (GRID_SIZE + 3 + 3); 
+        this.draw();
+    }
+    
+    setup() {
+        const getM = (e) => {
             const r = this.canvas.getBoundingClientRect();
-            const cx = e.touches ? e.touches[0].clientX : e.clientX;
-            const cy = e.touches ? e.touches[0].clientY : e.clientY;
-            return this.toLog(cx-r.left, cy-r.top);
+            return this.toLog(e.clientX-r.left, e.clientY-r.top);
         };
+        
+        document.getElementById('chk-move-pads').addEventListener('change', (e) => {
+            this.isPadEditMode = e.target.checked;
+            document.getElementById('edit-mode-overlay').style.display = this.isPadEditMode ? 'block' : 'none';
+            this.draw();
+        });
 
-        const start = (e) => {
-            e.preventDefault(); // Stop scroll
-            const m = getPos(e);
-            let hit = false;
-
-            // Long Press Logic
-            this.longPressTimer = setTimeout(() => this.handleLongPress(m), 500);
-
-            // 1. Edit Mode Pads
-            if (this.editMode) {
-                let pid = -1;
-                this.pads.forEach((p,i) => { if(dist(m.x,m.y,p.x,p.y) < p.r+0.5) pid=i; });
-                if (pid !== -1) {
-                    this.drag = {active:true, type:'PAD', idx:pid, off:{x:this.pads[pid].x-m.x, y:this.pads[pid].y-m.y}};
-                    this.vibrate(); return;
+        this.canvas.addEventListener('mousedown', e => {
+            const m = getM(e); let draw = false;
+            // 1. Pad Drag (Edit Mode)
+            if (this.isPadEditMode) {
+                let hitPad = -1;
+                this.pads.forEach((p, i) => { if(dist(m.x,m.y,p.x,p.y) < 1.0) hitPad = i; });
+                if (hitPad !== -1) {
+                    this.drag = { active:true, type:'PAD', idx:hitPad, off:{x:this.pads[hitPad].x-m.x, y:this.pads[hitPad].y-m.y} };
+                    return;
                 }
             }
             // 2. Pins
             this.devices.forEach((d, di) => {
                 d.getAbsPins().forEach((p, pi) => {
                     if(dist(m.x, m.y, p.x, p.y) < 0.5) {
-                        d.toggle(pi); this.reset(); this.draw(); this.saveState(); this.vibrate(); 
-                        clearTimeout(this.longPressTimer); // Toggle acts immediately
-                        hit=true;
+                        if(e.button===0 && !this.isPadEditMode) { d.toggle(pi); this.reset(); draw = true; }
                     }
                 });
             });
-            if(hit) return;
-
+            if(draw) return this.draw();
             // 3. Pads Toggle
-            if (!this.editMode) {
+            if (!this.isPadEditMode) {
                 this.pads.forEach((p, i) => {
-                    if(dist(m.x, m.y, p.x, p.y) < p.r+0.2) {
-                        this.padSt[i]=(this.padSt[i]+1)%3; this.reset(); this.draw(); this.saveState(); this.vibrate();
-                        hit=true;
+                    if(dist(m.x, m.y, p.x, p.y) < 0.9) {
+                        this.padSt[i] = (this.padSt[i]+1)%3; this.reset(); draw=true;
                     }
                 });
-                if(hit) return;
+                if(draw) return this.draw();
             }
-
             // 4. Device Drag
-            if (!this.editMode) {
+            if (!this.isPadEditMode) {
                 this.devices.forEach((d, i) => {
                     if(Math.abs(m.x-d.pos.x)<d.w/2 && Math.abs(m.y-d.pos.y)<d.h/2) {
-                        this.selDev=i; this.drag={active:true, type:'DEV', idx:i, off:{x:d.pos.x-m.x, y:d.pos.y-m.y}};
+                        this.selDev = i; this.drag = {active:true, type:'DEV', idx:i, off:{x:d.pos.x-m.x, y:d.pos.y-m.y}};
                         this.reset(); this.draw();
                     }
                 });
             }
-        };
-
-        const move = (e) => {
-            if (this.drag.active) {
-                e.preventDefault();
-                clearTimeout(this.longPressTimer); // Cancel longpress on drag
-                const m = getPos(e);
+        });
+        
+        this.canvas.addEventListener('mousemove', e => {
+            if(this.drag.active) {
+                const m = getM(e);
                 if (this.drag.type === 'DEV') {
                     const d = this.devices[this.drag.idx];
                     d.pos.x = m.x + this.drag.off.x; d.pos.y = m.y + this.drag.off.y;
                 } else if (this.drag.type === 'PAD') {
                     const p = this.pads[this.drag.idx];
                     p.x = m.x + this.drag.off.x; p.y = m.y + this.drag.off.y;
+                    this.reset();
                 }
                 this.draw();
             }
-        };
-
-        const end = () => {
-            clearTimeout(this.longPressTimer);
-            if (this.drag.active) {
-                if(this.drag.type==='DEV') this.devices[this.drag.idx].snap();
-                this.drag.active = false; this.draw(); this.saveState();
-            }
-        };
-
-        this.canvas.addEventListener('mousedown', start);
-        this.canvas.addEventListener('touchstart', start, {passive:false});
-        window.addEventListener('mousemove', move);
-        window.addEventListener('touchmove', move, {passive:false});
-        window.addEventListener('mouseup', end);
-        window.addEventListener('touchend', end);
-
-        // UI Controls
-        const chk = document.getElementById('chk-move-pads');
-        const rng = document.getElementById('rng-size');
-        const rngWrap = document.getElementById('size-control');
-        const overlay = document.getElementById('edit-mode-overlay');
-
-        chk.addEventListener('change', (e) => {
-            this.editMode = e.target.checked;
-            rngWrap.classList.toggle('show', this.editMode);
-            overlay.style.display = this.editMode ? 'block' : 'none';
-            this.draw();
         });
-
-        rng.addEventListener('input', (e) => {
-            if(this.editMode && this.drag.type==='PAD') { // Resize specific if dragging? No, global for simplicity on mobile
-               // Or better: resize ALL pads or recently clicked? Let's do ALL for consistent UI
-               const v = parseFloat(e.target.value);
-               this.pads.forEach(p => p.r = v);
-               this.draw(); this.saveState();
-            } else if (this.editMode) {
-               // Just update all to match slider
-               const v = parseFloat(e.target.value);
-               this.pads.forEach(p => p.r = v);
-               this.draw(); this.saveState();
+        
+        this.canvas.addEventListener('mouseup', () => {
+            if(this.drag.active) {
+                if (this.drag.type === 'DEV') this.devices[this.drag.idx].snap(GRID_SIZE-1);
+                this.drag.active = false; this.draw();
             }
         });
-
-        document.getElementById('btn-reset').addEventListener('click', () => {
-             if(confirm('Reset all positions?')) { this.initDefault(); this.reset(); this.draw(); this.saveState(); }
+        
+        this.canvas.addEventListener('contextmenu', e => {
+            e.preventDefault(); if (this.isPadEditMode) return;
+            const m = getM(e);
+            this.devices.forEach(d => {
+                d.getAbsPins().forEach((p, pi) => {
+                    if(dist(m.x, m.y, p.x, p.y)<0.5) { d.cycle(pi); this.reset(); this.draw(); }
+                });
+            });
         });
-
+        
         document.getElementById('btn-calc').addEventListener('click', () => {
-            const b = document.getElementById('btn-calc'); const t = b.innerText;
-            b.innerText = 'Running...';
-            setTimeout(() => {
-                const opt = new Optimizer(this.devices, this.pads, this.padSt);
-                const res = opt.solve();
+            const btn = document.getElementById('btn-calc'); const orig = btn.innerHTML;
+            btn.innerHTML = 'Calculating (SA)...';
+            setTimeout(() => { 
+                const optimizer = new LayoutOptimizer(this.devices, this.pads, this.padSt);
+                const res = optimizer.solve();
                 this.lines = res.lines;
-                this.updateStats(res.stats);
+                this.updateUI(res.stats);
                 this.draw();
-                b.innerText = t;
+                btn.innerHTML = orig; 
             }, 50);
         });
     }
 
-    handleLongPress(m) {
-        // 1. Device Pin Role Cycle
-        let hit = false;
-        this.devices.forEach(d => {
-            d.getAbsPins().forEach((p, pi) => {
-                if(dist(m.x, m.y, p.x, p.y) < 0.6) {
-                    d.cycle(pi); this.reset(); this.saveState(); this.vibrate(); hit=true;
-                    // Revert the toggle that happened on mousedown start
-                    d.toggle(pi); 
-                }
-            });
-        });
-        if(hit) { this.draw(); return; }
-
-        // 2. Pad Shape Toggle (Edit Mode)
-        if(this.editMode) {
-            this.pads.forEach(p => {
-                if(dist(m.x, m.y, p.x, p.y) < p.r+0.2) {
-                    p.shape = p.shape==='circle' ? 'square' : 'circle';
-                    this.draw(); this.saveState(); this.vibrate();
-                }
-            });
-        }
+    reset() {
+        this.lines = [];
+        document.getElementById('connection-list').innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;font-size:0.9rem;">Modified. Re-run optimization.</div>';
+        ['toast-cross', 'toast-rf'].forEach(id => document.getElementById(id).classList.remove('show'));
     }
 
-    reset() { this.lines=[]; this.updateStats({cross:0,crit:0,len:0}); ['toast-cross','toast-rf'].forEach(i=>document.getElementById(i).classList.remove('show')); }
-    toast(id, ms) { document.getElementById(id).classList.add('show'); setTimeout(()=>document.getElementById(id).classList.remove('show'), ms); }
-    
-    updateStats(s) {
-        const el = (i,v,b) => { const e=document.getElementById(i); e.innerText=v; e.className='stat-val '+(b?'bad':'good'); };
-        el('val-cross', s.cross, s.cross>0); el('val-crit', s.crit, s.crit>0); document.getElementById('val-len').innerText=s.len.toFixed(1);
-        document.getElementById('toast-cross').classList.toggle('show', s.cross>0);
-        document.getElementById('toast-rf').classList.toggle('show', s.crit>0);
+    updateUI(stats) {
+        const el = (id, v, bad) => { const d = document.getElementById(id); d.innerText = v; d.className = 'stat-val ' + (bad?'bad':'good'); };
+        el('val-cross', stats.cross, stats.cross>0);
+        el('val-crit', stats.crit, stats.crit>0);
+        document.getElementById('val-len').innerText = stats.len.toFixed(1);
         
-        const lst = document.getElementById('connection-list'); lst.innerHTML='';
+        const tCross = document.getElementById('toast-cross');
+        const tRf = document.getElementById('toast-rf');
+        tCross.classList.toggle('show', stats.cross > 0);
+        tRf.classList.toggle('show', stats.crit > 0);
+
+        const list = document.getElementById('connection-list');
+        list.innerHTML = '';
         this.devices.forEach((d, di) => {
-            const lns = this.lines.filter(l=>l.devIdx===di); if(lns.length===0) return;
-            lns.sort((a,b)=>a.pinIdx-b.pinIdx);
-            const card = document.createElement('div');
-            const err = lns.some(l=>['S','D'].includes(l.role)) && !lns.some(l=>l.type==='RF');
-            card.className='dev-card'+(err?' error':'');
-            let h = `<div class="dev-title"><span>${d.name}</span>${err?'<span style="color:#ef4444;font-size:0.7rem">NO RF</span>':''}</div>`;
+            const lns = this.lines.filter(l => l.devIdx === di);
+            if(lns.length===0) return;
+            lns.sort((a,b) => a.pinIdx - b.pinIdx);
+            
+            const div = document.createElement('div');
+            const rfErr = (lns.some(l=>['S','D'].includes(l.role)) && !lns.some(l=>l.type==='RF'));
+            div.className = 'dev-card' + (rfErr ? ' error' : '');
+            let html = `<div class="dev-title"><span>${d.name}</span>${rfErr ? '<span style="color:#ef4444;font-size:0.7rem">NO RF</span>' : ''}</div>`;
             lns.forEach(l => {
-                h += `<div class="wire-row"><div><span class="pin-badge">${l.pinIdx}</span><span class="${l.role==='G'?'role-G':'role-S'}">${l.role}</span></div><div>Pad ${l.lbl}</div></div>`;
+                const rClass = l.role==='G' ? 'role-G' : 'role-S';
+                html += `
+                <div class="wire-row" onmouseenter="app.setHighlight(${l.devIdx}, ${l.pinIdx})" onmouseleave="app.setHighlight(null, null)">
+                    <div><span class="pin-badge">${l.pinIdx}</span><span class="role-tag ${rClass}">${l.role}</span></div>
+                    <div style="color:#fff">Pad ${l.padLbl}</div>
+                </div>`;
             });
-            card.innerHTML=h; lst.appendChild(card);
+            div.innerHTML = html; list.appendChild(div);
         });
     }
 }
 
-window.onload = () => new App();
+const app = new App();
+window.app = app;
 </script>
 </body>
 </html>
