@@ -1,488 +1,484 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bonding Optimizer: ULTIMATE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <title>AEGIS: EXCLUSIVE BONDING SYSTEM</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg-deep: #020617;
-            --bg-panel: rgba(15, 23, 42, 0.85);
-            --primary: #6366f1;
-            --primary-glow: rgba(99, 102, 241, 0.4);
-            --accent: #06b6d4;
-            --success: #10b981;
-            --danger: #f43f5e;
-            --text-main: #f8fafc;
-            --text-sub: #94a3b8;
-            --border: rgba(148, 163, 184, 0.15);
+            --bg-void: #050505;
+            --bg-panel: rgba(10, 10, 12, 0.9);
+            --grid-major: rgba(255, 255, 255, 0.05);
+            --grid-minor: rgba(255, 255, 255, 0.02);
+            
+            --c-primary: #00f0ff; /* Cyber Cyan */
+            --c-secondary: #7000ff; /* Neon Purple */
+            --c-alert: #ff003c; /* Cyber Red */
+            --c-success: #00ff9f; /* Cyber Green */
+            --c-text: #e0e0e0;
+            --c-dim: #505050;
+
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-ui: 'Rajdhani', sans-serif;
         }
 
-        * { box-sizing: border-box; }
-
+        * { box-sizing: border-box; user-select: none; }
+        
         body {
-            font-family: 'Inter', sans-serif;
-            margin: 0; display: flex; height: 100vh;
-            background-color: var(--bg-deep);
-            background-image: 
-                radial-gradient(circle at 50% 50%, #1e293b 0%, #020617 100%);
-            color: var(--text-main); overflow: hidden;
+            margin: 0; height: 100vh; display: flex;
+            background-color: var(--bg-void);
+            color: var(--c-text);
+            font-family: var(--font-ui);
+            overflow: hidden;
         }
 
-        /* UI Sidebar */
-        #sidebar {
+        /* --- CRT SCANLINE EFFECT --- */
+        body::before {
+            content: " ";
+            display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none; z-index: 1000;
+        }
+
+        /* --- SIDEBAR --- */
+        #ui-panel {
             width: 400px;
             background: var(--bg-panel);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid var(--border);
+            border-right: 1px solid var(--c-dim);
             padding: 24px; display: flex; flex-direction: column;
-            box-shadow: 10px 0 40px rgba(0,0,0,0.5);
+            box-shadow: 20px 0 50px rgba(0,0,0,0.8);
             z-index: 10;
+            position: relative;
         }
 
-        .title-block { margin-bottom: 24px; }
-        .title-block h1 {
-            font-size: 1.5rem; margin: 0; font-weight: 800;
-            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            letter-spacing: -0.02em;
+        .brand-area {
+            margin-bottom: 30px; border-bottom: 1px solid var(--c-primary);
+            padding-bottom: 10px;
         }
-        .title-block .subtitle {
-            font-size: 0.75rem; color: var(--accent); font-family: 'JetBrains Mono';
-            letter-spacing: 0.1em; opacity: 0.8;
+        .brand-title {
+            font-size: 2rem; font-weight: 700; color: var(--c-primary);
+            text-transform: uppercase; letter-spacing: 0.1em;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+            line-height: 1;
         }
-
-        .control-group { margin-bottom: 20px; }
-        .label-header {
-            font-size: 0.7rem; text-transform: uppercase; color: var(--text-sub);
-            font-weight: 700; letter-spacing: 0.05em; margin-bottom: 8px;
-            display: flex; justify-content: space-between;
+        .brand-sub {
+            font-family: var(--font-mono); font-size: 0.7rem; color: var(--c-success);
+            letter-spacing: 0.2em; margin-top: 5px; display: block;
         }
 
-        /* Buttons */
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        button {
-            background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-            color: var(--text-sub); padding: 10px; border-radius: 6px;
-            cursor: pointer; font-weight: 600; font-size: 0.85rem;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        .control-section { margin-bottom: 25px; }
+        .sec-label {
+            font-family: var(--font-mono); font-size: 0.65rem; color: var(--c-dim);
+            text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between;
         }
-        button:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: var(--text-sub); }
-        button.active {
-            background: var(--primary); color: #fff; border-color: var(--primary);
-            box-shadow: 0 0 15px var(--primary-glow);
+
+        /* Custom Buttons */
+        .btn-matrix { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; }
+        .cyber-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--c-dim);
+            color: var(--c-dim); padding: 8px; cursor: pointer;
+            font-family: var(--font-mono); font-size: 0.75rem; text-align: center;
+            transition: all 0.2s; position: relative; overflow: hidden;
         }
-        
-        .btn-main {
-            width: 100%; padding: 14px;
-            background: linear-gradient(135deg, var(--primary), #4f46e5);
-            color: white; border: none; font-size: 0.9rem; letter-spacing: 0.05em;
-            margin-top: 10px;
+        .cyber-btn::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 0%; height: 2px;
+            background: var(--c-primary); transition: width 0.2s;
         }
-        .btn-main:hover { transform: translateY(-1px); box-shadow: 0 5px 20px var(--primary-glow); }
+        .cyber-btn:hover { color: #fff; border-color: var(--c-text); background: rgba(255,255,255,0.1); }
+        .cyber-btn.active {
+            color: var(--bg-void); background: var(--c-primary);
+            border-color: var(--c-primary); font-weight: bold;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        }
+
+        .action-btn {
+            width: 100%; padding: 15px; border: none;
+            background: linear-gradient(135deg, var(--c-primary), var(--c-secondary));
+            color: #fff; font-family: var(--font-ui); font-size: 1.1rem; font-weight: 700;
+            letter-spacing: 0.1em; cursor: pointer; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+            transition: transform 0.1s, box-shadow 0.2s;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(112, 0, 255, 0.4);
+        }
+        .action-btn:active { transform: translateY(1px); }
 
         /* Toggles */
-        .toggle-card {
-            background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;
+        .toggle-row {
             display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 8px; border: 1px solid transparent;
+            background: rgba(255,255,255,0.03); padding: 8px 12px; margin-bottom: 5px;
+            border-left: 2px solid transparent;
         }
-        .toggle-card:hover { border-color: var(--border); }
-        .toggle-label { font-size: 0.9rem; font-weight: 500; }
-
+        .toggle-row:hover { border-left-color: var(--c-secondary); background: rgba(255,255,255,0.06); }
+        .t-lbl { font-size: 0.9rem; font-weight: 600; }
+        
         /* Switch */
-        .switch { position: relative; display: inline-block; width: 36px; height: 20px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
+        .chk-wrap { position: relative; width: 40px; height: 20px; }
+        .chk-wrap input { opacity: 0; width: 0; height: 0; }
+        .chk-slider {
             position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #334155; transition: .4s; border-radius: 20px;
+            background-color: #333; transition: .3s;
         }
-        .slider:before {
-            position: absolute; content: ""; height: 16px; width: 16px;
-            left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%;
+        .chk-slider::before {
+            content: ""; position: absolute; height: 16px; width: 16px;
+            left: 2px; bottom: 2px; background-color: #888; transition: .3s;
         }
-        input:checked + .slider { background-color: var(--success); }
-        input:checked + .slider:before { transform: translateX(16px); }
+        input:checked + .chk-slider { background-color: var(--c-secondary); }
+        input:checked + .chk-slider::before { transform: translateX(20px); background-color: #fff; }
 
-        /* Stats & Logs */
-        .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .stat-card {
-            background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border);
-            padding: 12px; border-radius: 8px; text-align: center;
+        /* Monitor / Console */
+        #monitor {
+            flex-grow: 1; margin-top: 20px;
+            background: rgba(0,0,0,0.5); border: 1px solid var(--c-dim);
+            padding: 10px; font-family: var(--font-mono); font-size: 0.7rem;
+            color: var(--c-success); overflow-y: auto;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
-        .stat-val { font-family: 'JetBrains Mono'; font-size: 1.25rem; font-weight: 700; color: #fff; }
-        .stat-lbl { font-size: 0.7rem; color: var(--text-sub); margin-top: 4px; }
-        .bad { color: var(--danger); text-shadow: 0 0 10px rgba(244, 63, 94, 0.4); }
-        .good { color: var(--success); text-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+        .log-entry { margin-bottom: 4px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 2px; }
+        .log-err { color: var(--c-alert); }
+        .log-warn { color: #ffe600; }
 
-        #console-log {
-            flex-grow: 1; background: rgba(0,0,0,0.3); border-radius: 8px;
-            padding: 10px; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
-            color: var(--text-sub); overflow-y: auto; white-space: pre-wrap;
-            border: 1px solid var(--border);
+        /* Stats Overlay */
+        .stat-panel {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;
         }
+        .stat-box {
+            background: rgba(255,255,255,0.05); padding: 10px; text-align: center;
+            border-top: 2px solid var(--c-dim);
+        }
+        .stat-val { font-size: 1.5rem; font-weight: 700; color: #fff; line-height: 1; }
+        .stat-label { font-size: 0.6rem; color: var(--c-dim); text-transform: uppercase; margin-top: 5px; }
+        .stat-box.err { border-top-color: var(--c-alert); } .stat-box.err .stat-val { color: var(--c-alert); }
+        .stat-box.ok { border-top-color: var(--c-success); } .stat-box.ok .stat-val { color: var(--c-success); }
 
-        /* Canvas */
+        /* --- CANVAS --- */
         #viewport {
-            flex-grow: 1; position: relative; overflow: hidden;
-            display: flex; justify-content: center; align-items: center;
+            flex-grow: 1; position: relative;
             background-image: 
-                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
-        }
-        canvas { 
-            box-shadow: 0 20px 80px rgba(0,0,0,0.6); 
-            border-radius: 4px;
-            background: rgba(15, 23, 42, 0.8);
+                linear-gradient(var(--grid-minor) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-minor) 1px, transparent 1px),
+                linear-gradient(var(--grid-major) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-major) 1px, transparent 1px);
+            background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+            display: flex; justify-content: center; align-items: center;
         }
 
-        /* Overlay Messages */
-        #overlay-msg {
-            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            padding: 10px 20px; background: var(--warning); color: #000;
-            font-weight: bold; border-radius: 20px; font-size: 0.85rem;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s;
-            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+        canvas {
+            background: rgba(10, 10, 12, 0.4);
+            box-shadow: 0 0 100px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        #overlay-msg.show { opacity: 1; }
 
+        /* Tooltip */
+        #tooltip {
+            position: absolute; pointer-events: none;
+            background: rgba(0, 0, 0, 0.8); border: 1px solid var(--c-primary);
+            color: #fff; padding: 8px 12px; font-size: 0.8rem;
+            font-family: var(--font-mono); z-index: 100;
+            display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        #tooltip b { color: var(--c-primary); }
+
+        /* Edit Badge */
+        #edit-badge {
+            position: absolute; top: 20px; right: 20px;
+            padding: 5px 15px; border: 1px solid var(--c-alert); color: var(--c-alert);
+            background: rgba(255, 0, 60, 0.1); font-weight: bold; font-size: 0.8rem;
+            letter-spacing: 0.1em; opacity: 0; transition: opacity 0.3s;
+        }
     </style>
 </head>
 <body>
 
-<div id="sidebar">
-    <div class="title-block">
-        <h1>Bonding Optimizer</h1>
-        <div class="subtitle">ULTIMATE EDITION // VER.3.0</div>
+<div id="ui-panel">
+    <div class="brand-area">
+        <div class="brand-title">AEGIS PRO</div>
+        <span class="brand-sub">EXCLUSIVE BONDING PROTOCOL v4.0</span>
     </div>
 
-    <div class="control-group">
-        <div class="label-header">Load Preset</div>
-        <div class="btn-grid">
-            <button class="active" onclick="app.loadPreset('Ariel', this)">Ariel</button>
-            <button onclick="app.loadPreset('Belle', this)">Belle</button>
-            <button onclick="app.loadPreset('Donald', this)">Donald</button>
+    <div class="control-section">
+        <div class="sec-label">
+            <span>Rod Configuration</span>
+            <span id="rod-status">ACTIVE</span>
+        </div>
+        <div class="btn-matrix">
+            <div class="cyber-btn active" onclick="app.loadPreset('Ariel', this)">ARIEL</div>
+            <div class="cyber-btn" onclick="app.loadPreset('Belle', this)">BELLE</div>
+            <div class="cyber-btn" onclick="app.loadPreset('Donald', this)">DONALD</div>
         </div>
     </div>
 
-    <div class="control-group">
-        <div class="label-header">Devices</div>
-        <div class="toggle-card">
-            <span class="toggle-label">SQD Unit</span>
-            <label class="switch"><input type="checkbox" checked onchange="app.toggleDevice(0)"><span class="slider"></span></label>
+    <div class="control-section">
+        <div class="sec-label">Device Units</div>
+        <div class="toggle-row">
+            <span class="t-lbl">SQD Unit</span>
+            <label class="chk-wrap"><input type="checkbox" checked onchange="app.toggleDev(0)"><span class="chk-slider"></span></label>
         </div>
-        <div class="toggle-card">
-            <span class="toggle-label">DQD Unit</span>
-            <label class="switch"><input type="checkbox" checked onchange="app.toggleDevice(1)"><span class="slider"></span></label>
-        </div>
-    </div>
-
-    <div class="control-group">
-        <div class="label-header">Tools</div>
-        <div class="toggle-card">
-            <span class="toggle-label">Edit Mode (Move/Resize)</span>
-            <label class="switch"><input type="checkbox" id="mode-edit" onchange="app.setMode(this.checked)"><span class="slider"></span></label>
+        <div class="toggle-row">
+            <span class="t-lbl">DQD Unit</span>
+            <label class="chk-wrap"><input type="checkbox" checked onchange="app.toggleDev(1)"><span class="chk-slider"></span></label>
         </div>
     </div>
 
-    <button class="btn-main" onclick="app.optimize()">
-        RUN PHYSICS SOLVER
-    </button>
-
-    <div class="control-group" style="margin-top: 20px;">
-        <div class="label-header">Metrics</div>
-        <div class="stats-row">
-            <div class="stat-card">
-                <div class="stat-val" id="val-cross">-</div>
-                <div class="stat-lbl">Crossings</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-val" id="val-len">-</div>
-                <div class="stat-lbl">Wire Length</div>
-            </div>
+    <div class="control-section">
+        <div class="sec-label">Manual Override</div>
+        <div class="toggle-row">
+            <span class="t-lbl">Edit Layout</span>
+            <label class="chk-wrap"><input type="checkbox" id="chk-edit" onchange="app.setEdit(this.checked)"><span class="chk-slider"></span></label>
         </div>
     </div>
 
-    <div id="console-log">Ready.</div>
+    <button class="action-btn" onclick="app.optimize()">CALCULATE ROUTE</button>
+
+    <div class="stat-panel">
+        <div class="stat-box" id="stat-cross-box">
+            <div class="stat-val" id="val-cross">-</div>
+            <div class="stat-label">Intersect</div>
+        </div>
+        <div class="stat-box" id="stat-len-box">
+            <div class="stat-val" id="val-len">-</div>
+            <div class="stat-label">Total Len</div>
+        </div>
+    </div>
+
+    <div id="monitor">System Initialized.</div>
 </div>
 
 <div id="viewport">
+    <div id="edit-badge">EDIT MODE ENABLED</div>
     <canvas id="mainCanvas"></canvas>
-    <div id="overlay-msg">EDIT MODE ACTIVE</div>
+    <div id="tooltip"></div>
 </div>
 
 <script>
-/**
- * MATH KERNEL
- * 幾何計算の中核ライブラリ。ベクトル演算、交差判定、形状計算。
- */
+/* --- GEOMETRY KERNEL --- */
 const Vec2 = {
-    add: (v1, v2) => ({ x: v1.x + v2.x, y: v1.y + v2.y }),
-    sub: (v1, v2) => ({ x: v1.x - v2.x, y: v1.y - v2.y }),
-    mul: (v, s) => ({ x: v.x * s, y: v.y * s }),
-    mag: (v) => Math.hypot(v.x, v.y),
-    norm: (v) => { const m = Math.hypot(v.x, v.y); return m===0 ? {x:0,y:0} : {x:v.x/m, y:v.y/m}; },
-    dist: (v1, v2) => Math.hypot(v1.x - v2.x, v1.y - v2.y),
-    dot: (v1, v2) => v1.x * v2.x + v1.y * v2.y,
+    dist: (a, b) => Math.hypot(a.x - b.x, a.y - b.y),
+    // 線分交差 (端点共有は除く)
+    intersect: (p1, p2, p3, p4) => {
+        const d = (p2.x - p1.x) * (p4.y - p3.y) - (p2.y - p1.y) * (p4.x - p3.x);
+        if (Math.abs(d) < 1e-9) return false;
+        const u = ((p3.x - p1.x) * (p4.y - p3.y) - (p3.y - p1.y) * (p4.x - p3.x)) / d;
+        const v = ((p3.x - p1.x) * (p2.y - p1.y) - (p3.y - p1.y) * (p2.x - p1.x)) / d;
+        return (u > 0.001 && u < 0.999) && (v > 0.001 && v < 0.999);
+    },
+    // パッド輪郭上の最近接点
+    getLandingPoint: (src, pad) => {
+        const dx = src.x - pad.x;
+        const dy = src.y - pad.y;
+        if (pad.shape === 'rect') {
+            const hw = pad.w / 2, hh = pad.h / 2;
+            // 内部判定
+            if (Math.abs(dx) < hw && Math.abs(dy) < hh) {
+                // 最も近い辺へ射影
+                if (hw - Math.abs(dx) < hh - Math.abs(dy)) return { x: pad.x + (dx>0?hw:-hw), y: src.y };
+                else return { x: src.x, y: pad.y + (dy>0?hh:-hh) };
+            }
+            return { x: pad.x + Math.max(-hw, Math.min(hw, dx)), y: pad.y + Math.max(-hh, Math.min(hh, dy)) };
+        } else {
+            const angle = Math.atan2(dy, dx);
+            const a = pad.w / 2, b = pad.h / 2;
+            const r = (a*b) / Math.sqrt((b*Math.cos(angle))**2 + (a*Math.sin(angle))**2);
+            return { x: pad.x + Math.cos(angle) * r, y: pad.y + Math.sin(angle) * r };
+        }
+    }
 };
 
-// 線分交差判定 (誤差許容)
-function intersect(p1, p2, p3, p4) {
-    const d = (p2.x - p1.x) * (p4.y - p3.y) - (p2.y - p1.y) * (p4.x - p3.x);
-    if (Math.abs(d) < 1e-9) return false;
-    const u = ((p3.x - p1.x) * (p4.y - p3.y) - (p3.y - p1.y) * (p4.x - p3.x)) / d;
-    const v = ((p3.x - p1.x) * (p2.y - p1.y) - (p3.y - p1.y) * (p2.x - p1.x)) / d;
-    // 0.01のマージンを持たせ、端点での接触は交差とみなさない
-    return (u > 0.01 && u < 0.99) && (v > 0.01 && v < 0.99);
-}
-
-// パッド形状上の最近接点取得 (重要: ここが「位置ずらし」の基礎)
-function getClosestPointOnPad(pt, pad) {
-    // パッド中心からターゲットへのベクトル
-    const dx = pt.x - pad.x;
-    const dy = pt.y - pad.y;
-    
-    if (pad.shape === 'rect') {
-        // 矩形: クランプ処理
-        const hw = pad.w / 2;
-        const hh = pad.h / 2;
-        // 内部にいる場合も境界へ押し出す
-        if (Math.abs(dx) < hw && Math.abs(dy) < hh) {
-            // 近い方の辺へ
-            if (hw - Math.abs(dx) < hh - Math.abs(dy)) return { x: pad.x + (dx>0?hw:-hw), y: pt.y };
-            else return { x: pt.x, y: pad.y + (dy>0?hh:-hh) };
-        }
-        return {
-            x: pad.x + Math.max(-hw, Math.min(hw, dx)),
-            y: pad.y + Math.max(-hh, Math.min(hh, dy))
-        };
-    } else {
-        // 円/楕円: 角度から外周点を計算
-        const angle = Math.atan2(dy, dx);
-        const a = pad.w / 2;
-        const b = pad.h / 2;
-        // 楕円方程式から半径Rを算出
-        const r = (a*b) / Math.sqrt((b*Math.cos(angle))**2 + (a*Math.sin(angle))**2);
-        return {
-            x: pad.x + Math.cos(angle) * r,
-            y: pad.y + Math.sin(angle) * r
-        };
-    }
-}
-
-/**
- * OPTIMIZER ENGINE (Ultimate)
- * 2段階最適化: 
- * 1. Simulated Annealing (どのパッドに繋ぐか)
- * 2. Force Directed Adjustment (パッド上のどこに繋ぐか)
- */
-class UltimateOptimizer {
-    constructor(devices, pads, padStatus) {
-        this.pins = [];
-        this.pads = [];
-        
-        // データをフラット化して管理しやすくする
-        devices.forEach((d, di) => {
-            if(!d.active) return;
-            d.getAbsPins().forEach(p => {
-                if(p.active) this.pins.push({...p, devIdx: di, id: this.pins.length});
-            });
-        });
-        
-        pads.forEach((p, i) => {
-            if(padStatus[i] !== 1) { // Broken以外
-                this.pads.push({...p, idx: i, status: padStatus[i]});
-            }
-        });
-        
-        // ピンごとの許容パッドリスト
-        this.candidates = this.pins.map(pin => 
-            this.pads.filter(pad => {
-                if(pin.role === 'G') return pad.status === 0; // GNDはNormal Padのみ
-                return true; // S/Dはどこでも可(RF推奨)
-            })
-        );
+/* --- LOGIC KERNEL: EXCLUSIVE SOLVER --- */
+class AegisSolver {
+    constructor(pins, pads) {
+        this.pins = pins; // List of pin objects
+        this.pads = pads; // List of valid pad objects
+        // 1対1対応のため、パッド数とピン数の整合性チェック
+        this.isValid = (this.pads.length >= this.pins.length);
     }
 
     solve() {
-        if(this.pins.length === 0) return { wires: [], stats: {cross:0, len:0} };
+        if (!this.isValid) {
+            return { error: `INSUFFICIENT PADS: Need ${this.pins.length}, Have ${this.pads.length}` };
+        }
+        if (this.pins.length === 0) return { wires: [], stats: { cross:0, len:0 } };
 
-        // STEP 1: Global Assignment (SA)
-        // どのピンをどのパッドIDに繋ぐかを決定
-        const assignment = this.runSimulatedAnnealing();
-
-        // STEP 2: Local Relaxation (Physics)
-        // 割り当てられたパッド上で、ワイヤの着地点を微調整して交差を解く
-        const optimizedWires = this.runContactPointPhysics(assignment);
-
-        return optimizedWires;
-    }
-
-    // SA: 組み合わせ最適化
-    runSimulatedAnnealing() {
         const N = this.pins.length;
-        let current = new Array(N).fill(-1);
+        const M = this.pads.length;
 
-        // 初期解: 距離優先
-        for(let i=0; i<N; i++) {
-            let bestP = -1, minD = Infinity;
-            this.candidates[i].forEach(pad => {
-                let d = Vec2.dist(this.pins[i], pad);
-                if(['S','D'].includes(this.pins[i].role) && pad.status===2) d -= 5000; // RF Bias
-                if(d < minD) { minD = d; bestP = pad; }
-            });
-            current[i] = bestP;
+        // 初期解: ランダムに重複なしで割り当てる
+        // 利用可能なパッドのインデックスリストを作成
+        let availPadIndices = Array.from({length: M}, (_, i) => i);
+        // シャッフル
+        for (let i = M - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [availPadIndices[i], availPadIndices[j]] = [availPadIndices[j], availPadIndices[i]];
         }
 
-        let bestAssign = [...current];
-        let minCost = this.evalAssignment(current);
-        
-        let temp = 100, cooling = 0.92;
+        // currentAssign[i] = padIndex (for pin i)
+        let currentAssign = new Array(N);
+        for(let i=0; i<N; i++) {
+            currentAssign[i] = availPadIndices[i];
+        }
+
+        // SAパラメータ
+        let bestAssign = [...currentAssign];
+        let minCost = this.evaluate(currentAssign);
+        let temp = 150.0;
+        const cooling = 0.95;
+
+        // SAループ
+        let iter = 0;
         while(temp > 0.1) {
-            for(let k=0; k<30; k++) { // 試行回数
-                const i = Math.floor(Math.random() * N);
-                const opts = this.candidates[i];
-                if(opts.length > 0) {
-                    const prev = current[i];
-                    current[i] = opts[Math.floor(Math.random() * opts.length)];
+            for(let k=0; k < 50; k++) {
+                const nextAssign = [...currentAssign];
+                const mode = Math.random();
+
+                // 操作A: 2つのピンの接続先をスワップ (1対1維持)
+                if (mode < 0.7 && N >= 2) {
+                    const i = Math.floor(Math.random() * N);
+                    const j = Math.floor(Math.random() * N);
+                    if (i !== j) {
+                        [nextAssign[i], nextAssign[j]] = [nextAssign[j], nextAssign[i]];
+                    }
+                } 
+                // 操作B: 未使用パッドと交換 (もし余剰パッドがあれば)
+                else if (M > N) {
+                    const i = Math.floor(Math.random() * N); // 対象ピン
+                    const currentPadIdx = nextAssign[i];
                     
-                    const cost = this.evalAssignment(current);
-                    if(cost < minCost || Math.random() < Math.exp((minCost - cost)/temp)) {
+                    // 未使用パッドを探す
+                    const usedSet = new Set(nextAssign);
+                    const unused = [];
+                    for(let p=0; p<M; p++) if(!usedSet.has(p)) unused.push(p);
+                    
+                    if(unused.length > 0) {
+                        const newPadIdx = unused[Math.floor(Math.random() * unused.length)];
+                        // 制約チェック: GNDピンはRFパッド(Status=2)にも繋げるが、推奨はNormal。GND->Brokenは論外(Solver外で除外済)
+                        // ここでは純粋に交換
+                        nextAssign[i] = newPadIdx;
+                    }
+                }
+
+                // 制約チェック: GNDピンは Normal(0) or RF(2)だが、Normal推奨。
+                // ただし今回はパッドリスト構築時に「Broken」は除外済み。
+                // 「GNDピンはGNDパッド(0)にしか繋げない」という厳格ルールがある場合:
+                if (!this.checkHardConstraints(nextAssign)) continue;
+
+                const cost = this.evaluate(nextAssign);
+                const delta = cost - minCost;
+
+                if (cost < minCost || Math.random() < Math.exp((minCost - cost) / temp)) {
+                    currentAssign = nextAssign;
+                    if (cost < minCost) {
                         minCost = cost;
-                        bestAssign = [...current];
-                    } else {
-                        current[i] = prev; // Revert
+                        bestAssign = [...currentAssign];
                     }
                 }
             }
             temp *= cooling;
+            iter++;
         }
-        return bestAssign;
+
+        return this.buildResult(bestAssign);
     }
 
-    // 簡易コスト評価 (中心点距離のみ)
-    evalAssignment(assign) {
-        let len = 0, pref = 0;
+    checkHardConstraints(assign) {
         for(let i=0; i<assign.length; i++) {
-            const pad = assign[i];
+            const pad = this.pads[assign[i]]; // assign[i] is index in this.pads (valid pads)
             const pin = this.pins[i];
-            len += Vec2.dist(pin, pad);
-            if(['S','D'].includes(pin.role) && pad.status !== 2) pref += 500;
+            // ルール: Role=G は Status=0 (Normal) のみ可とする場合
+            if (pin.role === 'G' && pad.status !== 0) return false;
         }
-        return len + pref;
+        return true;
     }
 
-    // ★ PHYSICS SOLVER: 接点スライド最適化 ★
-    // パッド上の着地点を「粒子」と見なし、交差を嫌う力で移動させる
-    runContactPointPhysics(assignment) {
-        // 初期化: まずは各パッドの「ピンに一番近い点」に着地させる
-        let wires = assignment.map((pad, i) => {
+    evaluate(assign) {
+        let cost = 0;
+        const lines = [];
+
+        for(let i=0; i<assign.length; i++) {
             const pin = this.pins[i];
-            const contact = getClosestPointOnPad(pin, pad);
-            return {
-                pin, pad, 
-                start: {x:pin.x, y:pin.y}, 
-                end: contact, // ここが可変
-                fixedEnd: false
-            };
-        });
+            const pad = this.pads[assign[i]]; // this.padsはBroken除外済み
+            
+            // 距離 (着地点考慮せず、中心距離で高速化)
+            const d = Vec2.dist(pin, pad);
+            cost += d;
 
-        const ITERATIONS = 50; // 物理演算ステップ数
-        
-        for(let iter=0; iter<ITERATIONS; iter++) {
-            // パッドごとにグループ化
-            const padGroups = {};
-            wires.forEach(w => {
-                if(!padGroups[w.pad.idx]) padGroups[w.pad.idx] = [];
-                padGroups[w.pad.idx].push(w);
-            });
+            // RF選好: S/Dピンは RFパッド(2) 推奨
+            if (['S','D'].includes(pin.role)) {
+                if (pad.status !== 2) cost += 5000; // 重いペナルティ
+            }
 
-            // 力の適用
-            wires.forEach(w1 => {
-                let force = {x:0, y:0};
-
-                // 1. 引力: ピン方向へ引っ張られる力 (配線を短くしたい)
-                const vecToPin = Vec2.sub(w1.start, w1.end);
-                force = Vec2.add(force, Vec2.mul(Vec2.norm(vecToPin), 0.5));
-
-                // 2. 斥力: 他のワイヤと交差している場合、交差を解く方向へ
-                wires.forEach(w2 => {
-                    if(w1 === w2) return;
-                    if(intersect(w1.start, w1.end, w2.start, w2.end)) {
-                        // 交差相手から離れる方向へ強い力を加える
-                        // 簡易的に「相手の着地点」から離れるベクトル
-                        const repel = Vec2.sub(w1.end, w2.end);
-                        const dist = Vec2.mag(repel) || 0.1;
-                        force = Vec2.add(force, Vec2.mul(Vec2.norm(repel), 2.0 / dist));
-                    }
-                });
-
-                // 3. ファンアウト: 同じパッド内の他の接続点と離れる
-                const group = padGroups[w1.pad.idx];
-                if(group.length > 1) {
-                    group.forEach(neighbor => {
-                        if(w1 === neighbor) return;
-                        const repel = Vec2.sub(w1.end, neighbor.end);
-                        const dist = Vec2.mag(repel);
-                        if(dist < 0.5) { // 近すぎる場合
-                            force = Vec2.add(force, Vec2.mul(Vec2.norm(repel), 1.0));
-                        }
-                    });
-                }
-
-                // 位置更新 (仮)
-                w1.end.x += force.x * 0.2;
-                w1.end.y += force.y * 0.2;
-
-                // 制約: 必ずパッドの形状上にクランプする
-                w1.end = getClosestPointOnPad(w1.end, w1.pad);
-            });
+            lines.push({p1: pin, p2: pad});
         }
 
-        // 最終チェックと整形
-        let crossCount = 0;
+        // 交差判定 (重いペナルティ)
+        let cross = 0;
+        for(let i=0; i<lines.length; i++) {
+            for(let j=i+1; j<lines.length; j++) {
+                if(Vec2.intersect(lines[i].p1, lines[i].p2, lines[j].p1, lines[j].p2)) {
+                    cross++;
+                }
+            }
+        }
+        cost += cross * 10000;
+
+        return cost;
+    }
+
+    buildResult(assign) {
+        const wires = [];
         let totalLen = 0;
-        wires.forEach(w => totalLen += Vec2.dist(w.start, w.end));
-        
+        let cross = 0;
+
+        // 最終的なライン生成 (ここで着地点計算)
+        for(let i=0; i<assign.length; i++) {
+            const pin = this.pins[i];
+            const pad = this.pads[assign[i]];
+            const land = Vec2.getLandingPoint(pin, pad);
+            
+            wires.push({
+                start: {x: pin.x, y: pin.y},
+                end: land,
+                pin: pin,
+                pad: pad,
+                padId: pad.id,
+                isRF: (['S','D'].includes(pin.role) && pad.status === 2)
+            });
+            totalLen += Vec2.dist(pin, land);
+        }
+
+        // 正確な交差判定
         for(let i=0; i<wires.length; i++) {
             for(let j=i+1; j<wires.length; j++) {
-                // 同じパッドへの接続同士の根本付近は無視
-                if(wires[i].pad.idx === wires[j].pad.idx) continue;
-                if(Vec2.dist(wires[i].start, wires[j].start) < 0.5) continue;
-
-                if(intersect(wires[i].start, wires[i].end, wires[j].start, wires[j].end)) {
-                    crossCount++;
-                    wires[i].cross = true; wires[j].cross = true;
+                if(Vec2.intersect(wires[i].start, wires[i].end, wires[j].start, wires[j].end)) {
+                    cross++;
+                    wires[i].cross = true;
+                    wires[j].cross = true;
                 }
             }
         }
 
-        return { wires, stats: { cross: crossCount, len: totalLen } };
+        return { wires, stats: { cross, len: totalLen } };
     }
 }
 
-/**
- * APPLICATION CONTROLLER
- */
-const CONFIG = {
-    gridSize: 12,
-    presets: {
-        'Ariel': { brk:[1,4,7,12,16], rf:[23,18] },
-        'Belle': { brk:[0,10,11,21], rf:[23,18] },
-        'Donald': { brk:[4,5,7,14,16,17,18,19,22], rf:[23] }
-    }
+/* --- APP CONTROLLER --- */
+const PRESETS = {
+    'Ariel': { brk:[1,4,7,12,16], rf:[23,18] },
+    'Belle': { brk:[0,10,11,21], rf:[23,18] },
+    'Donald': { brk:[4,5,7,14,16,17,18,19,22], rf:[23] }
 };
 
 class App {
     constructor() {
         this.canvas = document.getElementById('mainCanvas');
         this.ctx = this.canvas.getContext('2d');
-        this.logEl = document.getElementById('console-log');
+        this.monitor = document.getElementById('monitor');
         
-        // State
         this.devices = [
             this.createDev('SQD', 2, 4, 3.5, 3.5),
             this.createDev('DQD', 2, 5, 7.5, 7.0)
@@ -490,31 +486,39 @@ class App {
         this.pads = [];
         this.padStatus = new Array(24).fill(0);
         this.wires = [];
-        this.isEditMode = false;
+        this.isEdit = false;
 
-        // Init
         this.initPads();
         this.resize();
-        this.loadPreset('Ariel', document.querySelector('button.active'));
+        window.addEventListener('resize', ()=>this.resize());
+        this.setupInteractions();
         
-        // Events
-        window.addEventListener('resize', () => this.resize());
-        this.setupInput();
+        // Initial Load
+        this.loadPreset('Ariel', document.querySelector('.cyber-btn.active'));
+    }
+
+    log(msg, type='') {
+        const d = new Date();
+        const ts = `[${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}]`;
+        const div = document.createElement('div');
+        div.className = 'log-entry ' + (type==='err'?'log-err':(type==='warn'?'log-warn':''));
+        div.innerText = `${ts} ${msg}`;
+        this.monitor.prepend(div);
     }
 
     createDev(name, w, h, x, y) {
         return {
-            name, w, h, x, y, active: true,
+            name, w, h, x, y, active:true,
             getAbsPins: function() {
                 const pins = [];
                 for(let i=0; i<w*h; i++) {
                     const row = Math.floor(i/w), col = i%w;
                     let role = 'G';
-                    if(i===0) role = 'S'; if(i===w*h-1) role = 'D';
+                    if(i===0) role='S'; if(i===w*h-1) role='D';
                     pins.push({
                         x: x - (w-1)/2 + col,
                         y: y - (h-1)/2 + row,
-                        role, active: true, idx: i
+                        role, idx:i, devName:name
                     });
                 }
                 return pins;
@@ -523,246 +527,276 @@ class App {
     }
 
     initPads() {
-        // 周囲にパッドを配置
-        const range = (s, e, n) => Array.from({length:n}, (_,i) => s + (e-s)/(n-1)*i);
-        const max = CONFIG.gridSize - 1;
-        const coords = [
-            ...range(0, max, 6).map(v => ({x:v, y:max+3, side:'top'})),
-            ...range(0, max, 6).map(v => ({x:max+3, y:max-v, side:'right'})),
-            ...range(0, max, 6).map(v => ({x:max-v, y:-3, side:'bottom'})),
-            ...range(0, max, 6).map(v => ({x:-3, y:v, side:'left'}))
-        ];
-        this.pads = coords.map((c, i) => ({
-            x:c.x, y:c.y, w:0.8, h:0.8, shape:'circle', lbl:i+1
-        }));
-    }
-
-    log(msg) {
-        this.logEl.innerText = `> ${msg}\n` + this.logEl.innerText.slice(0, 500);
+        // 12x12 grid perimeter logic
+        const max = 11; 
+        // 0-5 (6pads) per side
+        const make = (x,y,lbl) => ({x,y,w:0.8,h:0.8,shape:'circle',lbl, id:lbl-1});
+        const rng = (s,e) => {
+            const arr=[]; for(let i=0; i<6; i++) arr.push(s + (e-s)/5*i); return arr;
+        };
+        
+        let idx = 1;
+        // Top (Left to Right)
+        rng(0, max).forEach(x => this.pads.push(make(x, max+3, idx++)));
+        // Right (Top to Bottom)
+        rng(max, 0).forEach(y => this.pads.push(make(max+3, y, idx++)));
+        // Bottom (Right to Left)
+        rng(max, 0).forEach(x => this.pads.push(make(x, -3, idx++)));
+        // Left (Bottom to Top)
+        rng(0, max).forEach(y => this.pads.push(make(-3, y, idx++)));
     }
 
     loadPreset(name, btn) {
         if(btn) {
-            document.querySelectorAll('.btn-grid button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.cyber-btn').forEach(b=>b.classList.remove('active'));
             btn.classList.add('active');
         }
-        const p = CONFIG.presets[name];
+        const p = PRESETS[name];
         this.padStatus.fill(0);
-        p.brk.forEach(i => this.padStatus[i] = 1); // Broken
-        p.rf.forEach(i => this.padStatus[i] = 2);  // RF
+        p.brk.forEach(i => this.padStatus[i] = 1);
+        p.rf.forEach(i => this.padStatus[i] = 2);
         this.wires = [];
-        this.updateUI({cross:'-', len:'-'});
-        this.log(`Loaded preset: ${name}`);
+        this.updateStats({cross:'-', len:'-'});
+        this.log(`Config loaded: ${name}`);
         this.draw();
+    }
+
+    toggleDev(i) {
+        this.devices[i].active = !this.devices[i].active;
+        this.wires = []; this.draw();
+        this.log(`Unit ${this.devices[i].name} ${this.devices[i].active?'Enabled':'Disabled'}`);
+    }
+
+    setEdit(v) {
+        this.isEdit = v;
+        document.getElementById('edit-badge').style.opacity = v ? 1 : 0;
+        this.log(`Edit Mode: ${v?'ON':'OFF'}`);
     }
 
     optimize() {
-        this.log("Starting physics solver...");
-        const opt = new UltimateOptimizer(this.devices, this.pads, this.padStatus);
+        this.log("Initiating Optimization Sequence...");
         
-        // Async UI update
-        setTimeout(() => {
-            const start = performance.now();
-            const res = opt.solve();
-            const time = (performance.now() - start).toFixed(1);
-            
-            this.wires = res.wires;
-            this.updateUI(res.stats);
-            this.log(`Solver finished in ${time}ms.`);
-            this.log(`Crossings: ${res.stats.cross}, Length: ${res.stats.len.toFixed(1)}`);
-            this.draw();
-        }, 50);
+        // 1. Collect valid pins
+        const activePins = [];
+        this.devices.forEach(d => {
+            if(d.active) activePins.push(...d.getAbsPins());
+        });
+
+        // 2. Collect valid pads (Broken status=1 is invalid)
+        const validPads = [];
+        this.pads.forEach((p, i) => {
+            if(this.padStatus[i] !== 1) {
+                validPads.push({...p, idx:i, status:this.padStatus[i]});
+            }
+        });
+
+        // 3. Solve
+        const solver = new AegisSolver(activePins, validPads);
+        
+        // Async for UI responsiveness
+        requestAnimationFrame(() => {
+            const startT = performance.now();
+            const res = solver.solve();
+            const endT = performance.now();
+
+            if(res.error) {
+                this.log(res.error, 'err');
+                alert(res.error);
+            } else {
+                this.wires = res.wires;
+                this.updateStats(res.stats);
+                this.log(`Route Found: ${(endT-startT).toFixed(2)}ms`);
+                this.log(`Wires: ${this.wires.length}, Cross: ${res.stats.cross}`, res.stats.cross>0?'err':'');
+                this.animateBuild();
+            }
+        });
     }
 
-    updateUI(stats) {
-        const cEl = document.getElementById('val-cross');
-        cEl.innerText = stats.cross;
-        cEl.className = 'stat-val ' + (stats.cross === 0 ? 'good' : 'bad');
-        document.getElementById('val-len').innerText = typeof stats.len === 'number' ? stats.len.toFixed(1) : '-';
+    updateStats(s) {
+        const cBox = document.getElementById('stat-cross-box');
+        const lBox = document.getElementById('stat-len-box');
+        const cVal = document.getElementById('val-cross');
+        const lVal = document.getElementById('val-len');
+
+        cVal.innerText = s.cross;
+        lVal.innerText = (typeof s.len === 'number') ? s.len.toFixed(1) : '-';
+
+        cBox.className = 'stat-box ' + (s.cross===0 ? 'ok' : (s.cross==='-'?'':'err'));
+        lBox.className = 'stat-box';
     }
 
-    toggleDevice(idx) {
-        this.devices[idx].active = !this.devices[idx].active;
-        this.wires = []; this.draw();
-    }
-
-    setMode(edit) {
-        this.isEditMode = edit;
-        document.getElementById('overlay-msg').classList.toggle('show', edit);
-        this.draw();
-    }
-
-    // --- DRAWING SYSTEM ---
+    // --- VISUALIZATION ---
     resize() {
         const p = this.canvas.parentElement;
         this.canvas.width = p.clientWidth;
         this.canvas.height = p.clientHeight;
-        const sz = Math.min(this.canvas.width, this.canvas.height);
-        this.scale = sz / (CONFIG.gridSize + 8);
-        this.ox = this.canvas.width / 2;
-        this.oy = this.canvas.height / 2;
+        const dim = Math.min(this.canvas.width, this.canvas.height);
+        this.scale = dim / 20; // grid size 12 + margins
+        this.ox = this.canvas.width/2;
+        this.oy = this.canvas.height/2;
         this.draw();
     }
 
-    toScr(x, y) {
-        const cx = (CONFIG.gridSize-1)/2;
-        return { x: this.ox + (x - cx)*this.scale, y: this.oy - (y - cx)*this.scale };
+    toScr(lx, ly) {
+        const cx = 5.5; // (12-1)/2
+        return { x: this.ox + (lx - cx)*this.scale, y: this.oy - (ly - cx)*this.scale };
     }
     toLog(sx, sy) {
-        const cx = (CONFIG.gridSize-1)/2;
+        const cx = 5.5;
         return { x: (sx - this.ox)/this.scale + cx, y: cx - (sy - this.oy)/this.scale };
     }
 
-    draw() {
+    animateBuild() {
+        // Simple animation effect
+        let progress = 0;
+        const anim = () => {
+            progress += 0.05;
+            this.draw(Math.min(1, progress));
+            if(progress < 1) requestAnimationFrame(anim);
+        };
+        anim();
+    }
+
+    draw(progress = 1) {
         const ctx = this.ctx;
-        ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
+        ctx.clearRect(0,0,this.canvas.width, this.canvas.height);
 
-        // Grid
-        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-        ctx.lineWidth = 1;
-        const s = -3, e = CONFIG.gridSize+2;
-        for(let i=s; i<=e; i++) {
-            const p1 = this.toScr(i, s), p2 = this.toScr(i, e);
-            ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
-            const p3 = this.toScr(s, i), p4 = this.toScr(e, i);
-            ctx.beginPath(); ctx.moveTo(p3.x, p3.y); ctx.lineTo(p4.x, p4.y); ctx.stroke();
-        }
-
-        // Pads
+        // Draw Pads
         this.pads.forEach((p, i) => {
             const sc = this.toScr(p.x, p.y);
             const w = p.w * this.scale;
             const h = p.h * this.scale;
             const st = this.padStatus[i];
-            
+
             ctx.beginPath();
-            if(p.shape==='rect') ctx.roundRect(sc.x-w/2, sc.y-h/2, w, h, 4);
-            else ctx.ellipse(sc.x, sc.y, w/2, h/2, 0, 0, Math.PI*2);
+            if(p.shape==='rect') ctx.rect(sc.x-w/2, sc.y-h/2, w, h);
+            else ctx.arc(sc.x, sc.y, w/2, 0, Math.PI*2);
             
-            // Color Logic
-            if(st===1) ctx.fillStyle = '#ef4444'; // Broken
-            else if(st===2) ctx.fillStyle = '#3b82f6'; // RF
-            else ctx.fillStyle = '#10b981'; // Normal
-            
-            ctx.shadowBlur = st===2 ? 15 : 0;
-            ctx.shadowColor = ctx.fillStyle;
-            
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            
-            if(this.isEditMode) {
-                ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2; ctx.stroke();
+            // Color scheme
+            let fill = '#333'; let stroke = '#555';
+            if(st===1) { fill = 'rgba(255,0,60,0.2)'; stroke = '#ff003c'; } // Broken
+            else if(st===2) { fill = 'rgba(112,0,255,0.3)'; stroke = '#7000ff'; } // RF
+            else { fill = 'rgba(0,240,255,0.1)'; stroke = '#00f0ff'; } // Norm
+
+            ctx.fillStyle = fill; ctx.strokeStyle = stroke;
+            ctx.lineWidth = 1;
+            ctx.fill(); ctx.stroke();
+
+            // Edit highlight
+            if(this.isEdit) {
+                ctx.strokeStyle = '#eab308'; ctx.setLineDash([2,2]); ctx.strokeRect(sc.x-w/2-2, sc.y-h/2-2, w+4, h+4); ctx.setLineDash([]);
             }
 
-            ctx.fillStyle = '#fff'; ctx.font = 'bold 10px JetBrains Mono';
+            // Label
+            ctx.fillStyle = '#fff'; ctx.font = '10px JetBrains Mono';
             ctx.textAlign = 'center'; ctx.textBaseline='middle';
             ctx.fillText(p.lbl, sc.x, sc.y);
         });
 
-        // Devices
+        // Draw Devices
         this.devices.forEach(d => {
             if(!d.active) return;
             const sc = this.toScr(d.x, d.y);
-            const w = d.w * this.scale;
-            const h = d.h * this.scale;
+            const w = d.w * this.scale, h = d.h * this.scale;
             
-            ctx.fillStyle = 'rgba(30, 41, 59, 0.8)';
-            ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.roundRect(sc.x-w/2, sc.y-h/2, w, h, 8);
-            ctx.fill(); ctx.stroke();
+            ctx.fillStyle = 'rgba(20,20,25,0.9)';
+            ctx.strokeStyle = '#444';
+            ctx.fillRect(sc.x-w/2, sc.y-h/2, w, h);
+            ctx.strokeRect(sc.x-w/2, sc.y-h/2, w, h);
             
-            // Name
-            ctx.fillStyle = '#64748b'; ctx.font = 'bold 12px Inter';
-            ctx.fillText(d.name, sc.x, sc.y - h/2 - 10);
+            ctx.fillStyle = '#666'; ctx.font = 'bold 12px Rajdhani';
+            ctx.fillText(d.name, sc.x, sc.y - h/2 - 8);
 
-            // Pins
-            d.getAbsPins().forEach(p => {
-                const pc = this.toScr(p.x, p.y);
+            d.getAbsPins().forEach(pin => {
+                const pc = this.toScr(pin.x, pin.y);
                 ctx.beginPath(); ctx.arc(pc.x, pc.y, 3, 0, Math.PI*2);
-                ctx.fillStyle = ['S','D'].includes(p.role) ? '#60a5fa' : '#fbbf24';
+                ctx.fillStyle = ['S','D'].includes(pin.role) ? '#7000ff' : '#00f0ff';
                 ctx.fill();
             });
         });
 
-        // Wires (Bezier Curves for 3D effect)
-        this.wires.forEach(w => {
+        // Draw Wires
+        const drawLimit = Math.floor(this.wires.length * progress);
+        for(let i=0; i<this.wires.length; i++) {
+            const w = this.wires[i];
             const p1 = this.toScr(w.start.x, w.start.y);
             const p2 = this.toScr(w.end.x, w.end.y);
-            const isRF = ['S','D'].includes(w.pin.role) && w.pad.status===2;
 
-            // Control points for Loop
-            // ループの高さを表現するために、制御点を上に持ち上げる
-            const mx = (p1.x + p2.x) / 2;
-            const my = (p1.y + p2.y) / 2;
-            const dist = Math.hypot(p1.x-p2.x, p1.y-p2.y);
-            const lift = dist * 0.5; // 高さ
-            
-            // Shadow (Offset)
+            // Dynamic progress per wire
+            if (progress < 1) {
+                const dx = p2.x - p1.x, dy = p2.y - p1.y;
+                const localP = Math.min(1, Math.max(0, progress * 1.5 - (i * 0.05))); 
+                p2.x = p1.x + dx * localP;
+                p2.y = p1.y + dy * localP;
+            }
+
             ctx.beginPath();
             ctx.moveTo(p1.x, p1.y);
-            ctx.quadraticCurveTo(mx, my + lift*0.2, p2.x, p2.y); // Slightly curved shadow
-            ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-            ctx.lineWidth = 4;
-            ctx.stroke();
-
-            // Main Wire
-            ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            // 擬似3D: 手前に向かってループするような制御点
-            // y座標をマイナス(画面上)に引っ張ることでループを表現
-            ctx.quadraticCurveTo(mx, my - lift, p2.x, p2.y);
+            ctx.lineTo(p2.x, p2.y);
             
-            ctx.strokeStyle = w.cross ? '#f43f5e' : (isRF ? '#60a5fa' : '#facc15');
-            ctx.lineWidth = isRF ? 2.5 : 1.5;
-            ctx.shadowBlur = isRF ? 10 : 0;
-            ctx.shadowColor = ctx.strokeStyle;
-            ctx.lineCap = 'round';
+            if (w.cross) {
+                ctx.strokeStyle = '#ff003c'; ctx.lineWidth = 2;
+                ctx.shadowBlur = 5; ctx.shadowColor = '#ff003c';
+            } else if (w.isRF) {
+                ctx.strokeStyle = '#7000ff'; ctx.lineWidth = 2;
+                ctx.shadowBlur = 8; ctx.shadowColor = '#7000ff';
+            } else {
+                ctx.strokeStyle = '#00f0ff'; ctx.lineWidth = 1;
+                ctx.shadowBlur = 0;
+            }
+            
             ctx.stroke();
             ctx.shadowBlur = 0;
 
-            // Contact Point
-            ctx.beginPath(); ctx.arc(p2.x, p2.y, 2, 0, Math.PI*2);
-            ctx.fillStyle = '#fff'; ctx.fill();
-        });
+            // Landing marker
+            if (progress >= 1 || (progress * 1.5 - (i * 0.05)) >= 1) {
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(p2.x, p2.y, 2, 0, Math.PI*2); ctx.fill();
+            }
+        }
     }
 
-    setupInput() {
+    setupInteractions() {
         let drag = null;
-        this.canvas.addEventListener('mousedown', e => {
-            if(!this.isEditMode) return;
+        const tip = document.getElementById('tooltip');
+        
+        const getPos = e => {
             const r = this.canvas.getBoundingClientRect();
-            const m = this.toLog(e.clientX-r.left, e.clientY-r.top);
-            
-            const hit = this.pads.findIndex(p => Vec2.dist(p, m) < Math.max(p.w, p.h)/2 + 0.5);
-            if(hit !== -1) {
-                drag = { idx: hit, ox: this.pads[hit].x - m.x, oy: this.pads[hit].y - m.y };
+            return this.toLog(e.clientX-r.left, e.clientY-r.top);
+        };
+
+        this.canvas.addEventListener('mousedown', e => {
+            if(!this.isEdit) return;
+            const m = getPos(e);
+            const hit = this.pads.findIndex(p => Vec2.dist(p, m) < 1);
+            if(hit!==-1) {
+                drag = { idx:hit, ox:this.pads[hit].x-m.x, oy:this.pads[hit].y-m.y };
             }
         });
         window.addEventListener('mousemove', e => {
             if(drag) {
-                const r = this.canvas.getBoundingClientRect();
-                const m = this.toLog(e.clientX-r.left, e.clientY-r.top);
+                const m = getPos(e);
                 const p = this.pads[drag.idx];
                 p.x = m.x + drag.ox; p.y = m.y + drag.oy;
-                this.wires = []; // Clear wires on move
-                this.draw();
+                this.wires=[]; this.draw();
+            } else {
+                // Hover info
+                const m = getPos(e);
+                // Check wires (simple line dist check omitted for brevity, checking pins/pads)
+                tip.style.display = 'none';
             }
         });
-        window.addEventListener('mouseup', () => drag=null);
-        
-        // Right click context
-        this.canvas.addEventListener('contextmenu', e => {
+        window.addEventListener('mouseup', ()=>drag=null);
+        this.canvas.addEventListener('contextmenu', e=>{
             e.preventDefault();
-            const r = this.canvas.getBoundingClientRect();
-            const m = this.toLog(e.clientX-r.left, e.clientY-r.top);
+            const m = getPos(e);
             const hit = this.pads.findIndex(p => Vec2.dist(p, m) < 1);
-            if(hit !== -1) {
-                if(this.isEditMode) {
-                    const p = this.pads[hit];
-                    p.shape = p.shape==='rect'?'circle':'rect';
+            if(hit!==-1) {
+                if(this.isEdit) {
+                    const p = this.pads[hit]; p.shape = p.shape==='rect'?'circle':'rect';
                 } else {
                     this.padStatus[hit] = (this.padStatus[hit]+1)%3;
-                    this.wires = []; // Invalidate
+                    this.wires=[];
                 }
                 this.draw();
             }
